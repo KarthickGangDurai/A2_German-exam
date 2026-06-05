@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1a5f7a">
 <title>A2 German Language – Mock Exam Trainer</title>
 <style>
   :root {
@@ -3538,6 +3540,11 @@ function finishSection() {
 // ===================== INIT =====================
 window.addEventListener('beforeunload', stopAllAudio);
 renderHome();
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+  }
 </script>
 </body>
 </html>
