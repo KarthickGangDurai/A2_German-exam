@@ -287,6 +287,7 @@
 </style>
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
 
@@ -385,6 +386,48 @@ function toggleTranscript(id) {
   const el = document.getElementById(id);
   if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
 }
+
+
+function playTTS(text, btnId, boxId) {
+  stopAllAudio();
+  const btn = document.getElementById(btnId);
+  const box = document.getElementById(boxId);
+
+  if (btn) btn.innerHTML = '🔊 Playing...';
+  if (box) box.classList.add('playing');
+
+  speakGerman(text);
+
+  // Estimate duration and reset button
+  const words = text.split(/\s+/).length;
+  const duration = words * 450; // ~450ms per word at slow rate
+
+  setTimeout(() => {
+    if (btn) btn.innerHTML = '🔊 Nochmal abspielen';
+    if (box) box.classList.remove('playing');
+  }, duration);
+}
+
+function playListeningTeil1(index) {
+  const data = currentExam.listening.teil1[index];
+  playTTS(data.audio, 'btn-l1-' + index, 'box-l1-' + index);
+}
+
+function playListeningTeil2() {
+  const data = currentExam.listening.teil2;
+  playTTS(data.audio, 'btn-l2', 'box-l2');
+}
+
+function playListeningTeil3(index) {
+  const data = currentExam.listening.teil3[index];
+  playTTS(data.audio, 'btn-l3-' + index, 'box-l3-' + index);
+}
+
+function playListeningTeil4() {
+  const data = currentExam.listening.teil4;
+  playTTS(data.audio, 'btn-l4', 'box-l4');
+}
+
 
 // ===================== DATA BANKS =====================
 // ===================== DATA BANKS =====================
@@ -1925,84 +1968,159 @@ const VERBS = [
 
 const STUDY_GUIDE = {
   overview: {
-    en: `<h3>Exam Overview</h3>
-    <p>The A2 exam (Goethe-Zertifikat A2 / ÖSD A2) has 4 modules. You need <strong>60% overall</strong> to pass.</p>
+    en: `<h3>📋 Exam Overview – Pass with 60%+</h3>
+    <p>The A2 exam (Goethe-Zertifikat A2 / ÖSD A2) has 4 modules. You need <strong>60% overall</strong> (60/100 points) to pass. No single module can be 0%.</p>
     <ul>
-      <li><strong>Lesen (Reading):</strong> 25 points – 30 minutes. 4 parts: signs, info boards, emails, matching ads.</li>
-      <li><strong>Hören (Listening):</strong> 20 points – ~30 minutes. 4 parts: announcements, planning, dialogues, interview.</li>
-      <li><strong>Schreiben (Writing):</strong> 20 points – 30 minutes. Part 1: SMS/message (20–30 words). Part 2: Email (30–40 words).</li>
-      <li><strong>Sprechen (Speaking):</strong> 25 points – ~15 minutes. Part 1: Ask questions. Part 2: Talk about yourself. Part 3: Plan together.</li>
+      <li><strong>Lesen (Reading):</strong> 25 points – 30 min. 4 parts: signs/texts (5 qs), info boards (5 qs), emails (5 qs), matching ads (5 qs).</li>
+      <li><strong>Hören (Listening):</strong> 20 points – ~30 min. 4 parts: announcements (5 qs), planning/days (5 qs), dialogues (5 qs), interview true/false (5 qs).</li>
+      <li><strong>Schreiben (Writing):</strong> 20 points – 30 min. Part 1: SMS/message (20–30 words, 10 pts). Part 2: Email (30–40 words, 10 pts).</li>
+      <li><strong>Sprechen (Speaking):</strong> 25 points – ~15 min. Part 1: Ask questions (4 cards, 3 min). Part 2: Talk about yourself (4 bullet points, 2 min). Part 3: Plan together with partner (3 min).</li>
     </ul>
-    <p><strong>Golden Rule:</strong> Always answer every question. There is no negative marking. In writing, answer all 3 bullet points and stay inside the word count.</p>`,
-    tr: `<h3>Sınav Genel Bakış</h3>
-    <p>A2 sınavı (Goethe-Zertifikat A2 / ÖSD A2) 4 bölümden oluşur. Geçmek için <strong>toplamda %60</strong> almanız gerekir.</p>
+    <div class="example-box"><strong>🎯 Golden Rules for 60+:</strong><br>1. Never leave anything blank – guess if unsure!<br>2. In writing, answer ALL 3 bullet points and stay in word count.<br>3. In speaking, speak to ALL points and use connectors (weil, aber, deshalb, trotzdem).<br>4. In reading, eliminate wrong answers first.<br>5. In listening, write numbers/times immediately – you hear it once (or twice for Teil 4).</div>`,
+    tr: `<h3>📋 Sınav Genel Bakış – %60+ ile Geçin</h3>
+    <p>A2 sınavı (Goethe-Zertifikat A2 / ÖSD A2) 4 bölümden oluşur. Geçmek için <strong>toplamda %60</strong> (100 üzerinden 60 puan) almanız gerekir. Hiçbir modül 0% olamaz.</p>
     <ul>
-      <li><strong>Lesen (Okuma):</strong> 25 puan – 30 dakika. 4 bölüm: tabelalar, bilgi panoları, e-postalar, eşleştirme.</li>
-      <li><strong>Hören (Dinleme):</strong> 20 puan – ~30 dakika. 4 bölüm: anonslar, planlama, diyaloglar, röportaj.</li>
-      <li><strong>Schreiben (Yazma):</strong> 20 puan – 30 dakika. Bölüm 1: SMS (20–30 kelime). Bölüm 2: E-posta (30–40 kelime).</li>
-      <li><strong>Sprechen (Konuşma):</strong> 25 puan – ~15 dakika. Bölüm 1: Soru sor. Bölüm 2: Kendinden bahset. Bölüm 3: Beraber plan yap.</li>
+      <li><strong>Lesen (Okuma):</strong> 25 puan – 30 dk. 4 bölüm: tabelalar/metinler (5 soru), bilgi panoları (5), e-postalar (5), eşleştirme (5).</li>
+      <li><strong>Hören (Dinleme):</strong> 20 puan – ~30 dk. 4 bölüm: anonslar (5), planlama/günler (5), diyaloglar (5), röportaj doğru/yanlış (5).</li>
+      <li><strong>Schreiben (Yazma):</strong> 20 puan – 30 dk. Bölüm 1: SMS (20–30 kelime, 10 puan). Bölüm 2: E-posta (30–40 kelime, 10 puan).</li>
+      <li><strong>Sprechen (Konuşma):</strong> 25 puan – ~15 dk. Bölüm 1: Soru sor (4 kart, 3 dk). Bölüm 2: Kendinden bahset (4 madde, 2 dk). Bölüm 3: Beraber plan yap (3 dk).</li>
     </ul>
-    <p><strong>Altın Kural:</strong> Her soruyu cevaplayın. Eksi puanlama yok. Yazmada 3 maddeyi de cevaplayın ve kelime sınırına uyun.</p>`,
-    ar: `<div dir="rtl" style="text-align:right"><h3>نظرة عامة على الامتحان</h3>
-    <p>يتكون امتحان A2 (Goethe-Zertifikat A2 / ÖSD A2) من 4 وحدات. تحتاج إلى <strong>60% إجمالاً</strong> للنجاح.</p>
+    <div class="example-box"><strong>🎯 %60+ İçin Altın Kurallar:</strong><br>1. Hiçbir şey boş bırakmayın – emin değilseniz tahmin edin!<br>2. Yazmada TÜM 3 maddeyi cevaplayın ve kelime sınırına uyun.<br>3. Konuşmada TÜM maddelere değinin ve bağlaçlar kullanın (weil, aber, deshalb, trotzdem).<br>4. Okumada önce yanlış cevapları eleyin.<br>5. Dinlemede sayıları/zamanları hemen yazın – bir kez (veya Bölüm 4'te iki kez) duyarsınız.</div>`,
+    ar: `<div dir="rtl" style="text-align:right"><h3>📋 نظرة عامة على الامتحان – النجاح بـ 60%+</h3>
+    <p>يتكون امتحان A2 (Goethe-Zertifikat A2 / ÖSD A2) من 4 وحدات. تحتاج إلى <strong>60% إجمالاً</strong> (60 من 100 نقطة) للنجاح. لا يمكن أن تكون أي وحدة 0%.</p>
     <ul>
-      <li><strong>Lesen (القراءة):</strong> 25 نقطة – 30 دقيقة. 4 أجزاء: لافتات، لوحات معلومات، رسائل بريد، مطابقة إعلانات.</li>
-      <li><strong>Hören (الاستماع):</strong> 20 نقطة – ~30 دقيقة. 4 أجزاء: إعلانات، تخطيط، حوارات، مقابلة.</li>
-      <li><strong>Schreiben (الكتابة):</strong> 20 نقطة – 30 دقيقة. الجزء 1: رسالة قصيرة (20–30 كلمة). الجزء 2: بريد إلكتروني (30–40 كلمة).</li>
-      <li><strong>Sprechen (التحدث):</strong> 25 نقطة – ~15 دقيقة. الجزء 1: طرح أسئلة. الجزء 2: التحدث عن النفس. الجزء 3: التخطيط معاً.</li>
+      <li><strong>Lesen (القراءة):</strong> 25 نقطة – 30 دقيقة. 4 أجزاء: لافتات/نصوص (5 أسئلة)، لوحات معلومات (5)، رسائل بريد (5)، مطابقة إعلانات (5).</li>
+      <li><strong>Hören (الاستماع):</strong> 20 نقطة – ~30 دقيقة. 4 أجزاء: إعلانات (5)، تخطيط/أيام (5)، حوارات (5)، مقابلة صح/خطأ (5).</li>
+      <li><strong>Schreiben (الكتابة):</strong> 20 نقطة – 30 دقيقة. الجزء 1: رسالة قصيرة (20–30 كلمة، 10 نقاط). الجزء 2: بريد إلكتروني (30–40 كلمة، 10 نقاط).</li>
+      <li><strong>Sprechen (التحدث):</strong> 25 نقطة – ~15 دقيقة. الجزء 1: طرح أسئلة (4 بطاقات، 3 دق). الجزء 2: التحدث عن النفس (4 نقاط، 2 دق). الجزء 3: التخطيط معاً (3 دق).</li>
     </ul>
-    <p><strong>القاعدة الذهبية:</strong> أجب على كل سؤال. لا توجد درجات سالبة. في الكتابة، أجب على النقاط الثلاث واحترم عدد الكلمات.</p></div>`,
-    uk: `<h3>Огляд іспиту</h3>
-    <p>Іспит A2 (Goethe-Zertifikat A2 / ÖSD A2) має 4 модулі. Для проходження потрібно <strong>60% загалом</strong>.</p>
+    <div class="example-box"><strong>🎯 القواعد الذهبية للنجاح بـ 60+:</strong><br>1. لا تترك أي شيء فارغاً – خمن إذا لم تكن متأكداً!<br>2. في الكتابة، أجب على النقاط الثلاث جميعها واحترم عدد الكلمات.<br>3. في التحدث، تناول جميع النقاط واستخدم روابط (weil, aber, deshalb, trotzdem).<br>4. في القراءة، استبعد الإجابات الخاطئة أولاً.<br>5. في الاستماع، اكتب الأرقام/الأوقات فوراً – تسمعها مرة واحدة (أو مرتين في الجزء 4).</div></div>`,
+    uk: `<h3>📋 Огляд іспиту – Проходження з 60%+</h3>
+    <p>Іспит A2 (Goethe-Zertifikat A2 / ÖSD A2) має 4 модулі. Для проходження потрібно <strong>60% загалом</strong> (60 з 100 балів). Жоден модуль не може бути 0%.</p>
     <ul>
-      <li><strong>Lesen (Читання):</strong> 25 балів – 30 хв. 4 частини: вивіски, інформаційні таблиці, листи, відповідність оголошень.</li>
-      <li><strong>Hören (Слухання):</strong> 20 балів – ~30 хв. 4 частини: оголошення, планування, діалоги, інтерв'ю.</li>
-      <li><strong>Schreiben (Письмо):</strong> 20 балів – 30 хв. Частина 1: SMS (20–30 слів). Частина 2: лист (30–40 слів).</li>
-      <li><strong>Sprechen (Говоріння):</strong> 25 балів – ~15 хв. Частина 1: запитання. Частина 2: розповідь про себе. Частина 3: спільне планування.</li>
+      <li><strong>Lesen (Читання):</strong> 25 балів – 30 хв. 4 частини: вивіски/тексти (5 питань), інформаційні таблиці (5), листи (5), відповідність оголошень (5).</li>
+      <li><strong>Hören (Слухання):</strong> 20 балів – ~30 хв. 4 частини: оголошення (5), планування/дні (5), діалоги (5), інтерв'ю правда/брехня (5).</li>
+      <li><strong>Schreiben (Письмо):</strong> 20 балів – 30 хв. Частина 1: SMS (20–30 слів, 10 балів). Частина 2: лист (30–40 слів, 10 балів).</li>
+      <li><strong>Sprechen (Говоріння):</strong> 25 балів – ~15 хв. Частина 1: запитання (4 картки, 3 хв). Частина 2: розповідь про себе (4 пункти, 2 хв). Частина 3: спільне планування (3 хв).</li>
     </ul>
-    <p><strong>Золоте правило:</strong> Відповідайте на кожне питання. Мінусових балів немає. У письмі відповідайте на всі 3 пункти та дотримуйтесь ліміту слів.</p>`
+    <div class="example-box"><strong>🎯 Золоті правила для 60+:</strong><br>1. Ніколи не залишайте порожнім – вгадуйте, якщо не впевнені!<br>2. У письмі відповідайте на ВСІ 3 пункти та дотримуйтесь ліміту слів.<br>3. У говорінні торкніться ВСІХ пунктів і використовуйте сполучники (weil, aber, deshalb, trotzdem).<br>4. У читанні спочатку виключайте неправильні відповіді.<br>5. У слуханні одразу записуйте числа/час – ви чуєте їх один раз (або двічі у Частині 4).</div>`
   },
   grammar: {
-    en: `<h3>Grammar Essentials</h3>
-    <ul>
-      <li><strong>Cases:</strong> Nominativ (subject), Akkusativ (direct object, after DOFUGOB prepositions), Dativ (indirect object, after MNZ BASVAG prepositions).</li>
-      <li><strong>Articles:</strong> der/die/das; ein/eine/ein. Plural article is <em>die</em> for all.</li>
-      <li><strong>Prepositions:</strong><br>Akkusativ: durch, für, gegen, ohne, um, bis (DOFUGOB)<br>Dativ: mit, nach, zu, bei, aus, seit, von, außer, gegenüber (MNZ BASVAG)<br>Wechsel (Akk/Dat): an, auf, hinter, in, neben, über, unter, vor, zwischen. <em>Motion = Akk, Location = Dat.</em></li>
-      <li><strong>Word Order:</strong> Verb is always second in main clauses (V2). In subordinate clauses (weil, dass, ob, wenn), verb goes to the end.</li>
-      <li><strong>Perfekt (Past):</strong> haben/sein + Partizip II. Use <em>sein</em> for motion/change (gehen, kommen, fahren, werden).</li>
-      <li><strong>Modal Verbs:</strong> können, müssen, sollen, wollen, dürfen, mögen. In Perfekt: ich habe ... machen können.</li>
-      <li><strong>Separable Verbs:</strong> Prefix goes to the end in present/past (anfangen → ich fange um 8 Uhr an).</li>
-    </ul>`,
-    tr: `<h3>Temel Gramer</h3>
-    <ul>
-      <li><strong>Haller:</strong> Nominativ (özne), Akkusativ (nesne, DOFUGOB edatlarından sonra), Dativ (dolaylı tümlecik, MNZ BASVAG edatlarından sonra).</li>
-      <li><strong>Edatlar:</strong> Akkusativ: durch, für, gegen, ohne, um, bis. Dativ: mit, nach, zu, bei, aus, seit, von, außer, gegenüber. Değişken edatlar: an, auf, hinter, in, neben, über, unter, vor, zwischen. <em>Hareket = Akk, Yer = Dat.</em></li>
-      <li><strong>Cümle Düzeni:</strong> Ana cümlede fiil 2. sırada (V2). Yan cümlede (weil, dass, ob, wenn) fiil sonda.</li>
-      <li><strong>Perfekt:</strong> haben/sein + Partizip II. Hareket fiilleri sein alır.</li>
-      <li><strong>Kiplik Fiiller:</strong> können, müssen, sollen, wollen, dürfen, mögen. Perfekt'te: ich habe ... machen können.</li>
-      <li><strong>Ayrılabilir Fiiller:</strong> Önek cümle sonuna gider (anfangen → ich fange ... an).</li>
-    </ul>`,
-    ar: `<div dir="rtl" style="text-align:right"><h3>أساسيات القواعد</h3>
-    <ul>
-      <li><strong>الحالات:</strong> Nominativ (الفاعل)، Akkusativ (المفعول به، بعد حروف جر DOFUGOB)، Dativ (مفعول به غير مباشر، بعد حروف جر MNZ BASVAG).</li>
-      <li><strong>حروف الجر:</strong> Accusativ: durch, für, gegen, ohne, um, bis. Dativ: mit, nach, zu, bei, aus, seit, von, außer, gegenüber. حروف الجر المتغيرة: an, auf, hinter, in, neben, über, unter, vor, zwischen. <em>الحركة = Accusativ، المكان = Dativ.</em></li>
-      <li><strong>ترتيب الجملة:</strong> الفعل في المرتبة الثانية في الجملة الرئيسية. في الجملة الفرعية (weil, dass, ob, wenn) الفعل في النهاية.</li>
-      <li><strong>الماضي (Perfekt):</strong> haben/sein + التصريف الثالث. أفعال الحركة تستخدم sein.</li>
-      <li><strong>الأفعال الModal:</strong> können, müssen, sollen, wollen, dürfen, mögen. في الماضي: ich habe ... machen können.</li>
-      <li><strong>الأفعال المنفصلة:</strong> السابقة تذهب إلى نهاية الجملة (anfangen → ich fange ... an).</li>
-    </ul></div>`,
-    uk: `<h3>Основи граматики</h3>
-    <ul>
-      <li><strong>Відмінки:</strong> Номінатив (підмет), Акузатив (прямий додаток, після прийменників DOFUGOB), Датив (непрямий додаток, після MNZ BASVAG).</li>
-      <li><strong>Прийменники:</strong> Акузатив: durch, für, gegen, ohne, um, bis. Датив: mit, nach, zu, bei, aus, seit, von, außer, gegenüber. Змінні: an, auf, hinter, in, neben, über, unter, vor, zwischen. <em>Рух = Akk, Місце = Dat.</em></li>
-      <li><strong>Порядок слів:</strong> Дієслово на другому місці в головному реченні (V2). У підрядному (weil, dass, ob, wenn) дієслово в кінці.</li>
-      <li><strong>Perfekt:</strong> haben/sein + Partizip II. Дієслова руху використовують sein.</li>
-      <li><strong>Модальні дієслова:</strong> können, müssen, sollen, wollen, dürfen, mögen. У Perfekt: ich habe ... machen können.</li>
-      <li><strong>Віддільні дієслова:</strong> Префікс іде в кінець речення (anfangen → ich fange ... an).</li>
-    </ul>`
+    en: `<h3>📐 Grammar Essentials – Master These for 60%+</h3>
+    <h4>1. The Four Cases (Die vier Fälle)</h4>
+    <table><tr><th>Case</th><th>Question</th><th>Example</th></tr>
+    <tr><td>Nominativ</td><td>Wer? Was?</td><td>Der Mann kauft.</td></tr>
+    <tr><td>Akkusativ</td><td>Wen? Was?</td><td>Ich sehe den Mann.</td></tr>
+    <tr><td>Dativ</td><td>Wem?</td><td>Ich gebe dem Mann das Buch.</td></tr>
+    <tr><td>Genitiv</td><td>Wessen?</td><td>Das Auto des Mannes.</td></tr></table>
+    <p><strong>Akkusativ prepositions:</strong> durch, für, gegen, ohne, um, bis (DOFUGOB). <strong>Dativ prepositions:</strong> mit, nach, zu, bei, aus, seit, von, außer, gegenüber (MNZ BASVAG).</p>
+    <p><strong>Wechselpräpositionen (Two-way):</strong> an, auf, hinter, in, neben, über, unter, vor, zwischen. <em>Motion/direction = Akkusativ (Wohin?), Location = Dativ (Wo?).</em></p>
+    <h4>2. Articles & Adjective Endings</h4>
+    <p>After <strong>der/die/das</strong> (definite): adjective takes <strong>-e/-en</strong> ending.<br>After <strong>ein/eine/ein</strong> (indefinite): adjective takes <strong>-er/-e/-es/-en/-em</strong> ending.<br><em>Rule: If article already shows case/gender clearly, adjective takes -e/-en. If article is weak (ein, kein, possessive), adjective must show more information.</em></p>
+    <h4>3. Word Order (Satzstellung)</h4>
+    <p><strong>Main clause:</strong> Verb is ALWAYS in position 2. (Ich gehe heute ins Kino.)<br><strong>Subordinate clause:</strong> Conjunction + subject + ... + verb at END. (weil, dass, ob, wenn, als)<br>Example: <em>Ich bleibe zu Hause, weil ich krank bin.</em><br><strong>Modal + Infinitive:</strong> Modal verb in position 2, infinitive at end. (Ich muss jetzt gehen.)</p>
+    <h4>4. Perfekt (Past Tense)</h4>
+    <p>Formation: <strong>haben/sein</strong> + Partizip II (ge-...-t/-en).<br>Use <strong>sein</strong> for: motion verbs (gehen, kommen, fahren, fliegen, reisen, laufen), change of state (werden, aufwachen, einschlafen).<br>All others use <strong>haben</strong>.<br>Separable verbs: prefix + ge-...-t (anfangen → angefangen). Inseparable: no ge- (besuchen → besucht).</p>
+    <h4>5. Modal Verbs in Detail</h4>
+    <table><tr><th>Modal</th><th>Präsens</th><th>Präteritum</th><th>Meaning</th></tr>
+    <tr><td>können</td><td>kann, kannst, kann</td><td>konnte</td><td>can, to be able</td></tr>
+    <tr><td>müssen</td><td>muss, musst, muss</td><td>musste</td><td>must, have to</td></tr>
+    <tr><td>sollen</td><td>soll, sollst, soll</td><td>sollte</td><td>should, be supposed to</td></tr>
+    <tr><td>wollen</td><td>will, willst, will</td><td>wollte</td><td>want to</td></tr>
+    <tr><td>dürfen</td><td>darf, darfst, darf</td><td>durfte</td><td>may, be allowed</td></tr>
+    <tr><td>mögen</td><td>mag, magst, mag</td><td>mochte</td><td>like to</td></tr></table>
+    <p><strong>Perfekt with modal:</strong> Ich habe das machen <strong>können</strong>. (Infinitive stays at end, modal becomes infinitive too!)</p>
+    <h4>6. Reflexive Verbs</h4>
+    <p>sich freuen (auf), sich interessieren (für), sich erinnern (an), sich vorbereiten (auf), sich ausruhen.<br>Accusative reflexive: Ich freue mich. Dativ reflexive: Ich kaufe mir ein Buch.</p>
+    <h4>7. Comparative & Superlative</h4>
+    <p>Most adjectives: -er, am ...-sten. (schnell → schneller → am schnellsten).<br>Umlaut + a/o/u: groß → größer → am größten.<br>Irregular: gut → besser → am besten, viel → mehr → am meisten, gern → lieber → am liebsten.</p>`,
+    tr: `<h3>📐 Temel Gramer – %60+ İçin Bunları Bilin</h3>
+    <h4>1. Dört Hal (Die vier Fälle)</h4>
+    <table><tr><th>Hal</th><th>Soru</th><th>Örnek</th></tr>
+    <tr><td>Nominativ</td><td>Kim? Ne?</td><td>Der Mann kauft.</td></tr>
+    <tr><td>Akkusativ</td><td>Kimi? Ne?</td><td>Ich sehe den Mann.</td></tr>
+    <tr><td>Dativ</td><td>Kime?</td><td>Ich gebe dem Mann das Buch.</td></tr>
+    <tr><td>Genitiv</td><td>Kimin?</td><td>Das Auto des Mannes.</td></tr></table>
+    <p><strong>Akkusativ edatları:</strong> durch, für, gegen, ohne, um, bis (DOFUGOB). <strong>Dativ edatları:</strong> mit, nach, zu, bei, aus, seit, von, außer, gegenüber (MNZ BASVAG).</p>
+    <p><strong>Wechselpräpositionen (İki yönlü):</strong> an, auf, hinter, in, neben, über, unter, vor, zwischen. <em>Hareket = Akkusativ (Wohin?), Yer = Dativ (Wo?).</em></p>
+    <h4>2. Artikeller & Sıfat Çekimleri</h4>
+    <p><strong>der/die/das</strong> sonrası: sıfat <strong>-e/-en</strong> alır.<br><strong>ein/eine/ein</strong> sonrası: sıfat <strong>-er/-e/-es/-en/-em</strong> alır.</p>
+    <h4>3. Cümle Düzeni</h4>
+    <p><strong>Ana cümle:</strong> Fiil her zaman 2. sırada. (Ich gehe heute ins Kino.)<br><strong>Yan cümle:</strong> Bağlaç + özne + ... + fiil Sonda. (weil, dass, ob, wenn, als)<br><strong>Modal + Mastar:</strong> Modal fiil 2. sırada, mastar sonda. (Ich muss jetzt gehen.)</p>
+    <h4>4. Perfekt (Geçmiş Zaman)</h4>
+    <p><strong>haben/sein</strong> + Partizip II. Hareket fiilleri sein alır. Diğerleri haben.</p>
+    <h4>5. Kiplik Fiiller</h4>
+    <table><tr><th>Kip</th><th>Şimdiki</th><th>Geçmiş</th><th>Anlam</th></tr>
+    <tr><td>können</td><td>kann, kannst, kann</td><td>konnte</td><td>yapabilmek</td></tr>
+    <tr><td>müssen</td><td>muss, musst, muss</td><td>musste</td><td>zorunda olmak</td></tr>
+    <tr><td>sollen</td><td>soll, sollst, soll</td><td>sollte</td><td>gerekli olmak</td></tr>
+    <tr><td>wollen</td><td>will, willst, will</td><td>wollte</td><td>istemek</td></tr>
+    <tr><td>dürfen</td><td>darf, darfst, darf</td><td>durfte</td><td>izin verilmek</td></tr>
+    <tr><td>mögen</td><td>mag, magst, mag</td><td>mochte</td><td>sevmek</td></tr></table>
+    <p><strong>Kip + Perfekt:</strong> Ich habe das machen <strong>können</strong>. (Kip mastar olarak sonda kalır!)</p>
+    <h4>6. Dönüşlü Fiiller</h4>
+    <p>sich freuen, sich interessieren, sich erinnern, sich vorbereiten, sich ausruhen.</p>
+    <h4>7. Karşılaştırma & Üstünlük</h4>
+    <p>-er, am ...-sten. (schnell → schneller → am schnellsten).<br>gut → besser → am besten, viel → mehr → am meisten.</p>`,
+    ar: `<div dir="rtl" style="text-align:right"><h3>📐 أساسيات القواعد – إتقانها يضمن 60+</h3>
+    <h4>1. الحالات الأربع (Die vier Fälle)</h4>
+    <table><tr><th>الحالة</th><th>السؤال</th><th>مثال</th></tr>
+    <tr><td>Nominativ</td><td>من؟ ماذا؟</td><td>Der Mann kauft.</td></tr>
+    <tr><td>Akkusativ</td><td>من؟ ماذا؟ (مفعول به)</td><td>Ich sehe den Mann.</td></tr>
+    <tr><td>Dativ</td><td>لمن؟</td><td>Ich gebe dem Mann das Buch.</td></tr>
+    <tr><td>Genitiv</td><td>لمن؟ (ملكية)</td><td>Das Auto des Mannes.</td></tr></table>
+    <p><strong>حروف جر Akkusativ:</strong> durch, für, gegen, ohne, um, bis. <strong>حروف جر Dativ:</strong> mit, nach, zu, bei, aus, seit, von, außer, gegenüber.</p>
+    <p><strong>حروف الجر المتغيرة:</strong> an, auf, hinter, in, neben, über, unter, vor, zwischen. <em>الحركة = Akkusativ، المكان = Dativ.</em></p>
+    <h4>2. الأدوات ونهايات الصفات</h4>
+    <p>بعد <strong>der/die/das</strong>: الصفة تأخذ <strong>-e/-en</strong>.<br>بعد <strong>ein/eine/ein</strong>: الصفة تأخذ <strong>-er/-e/-es/-en/-em</strong>.</p>
+    <h4>3. ترتيب الجملة</h4>
+    <p><strong>الجملة الرئيسية:</strong> الفعل دائماً في المرتبة الثانية.<br><strong>الجملة الفرعية:</strong> أداة الربط + الفاعل + ... + الفعل في النهاية. (weil, dass, ob, wenn, als)<br><strong>فعل Modal + مصدر:</strong> فعل Modal في المرتبة الثانية، المصدر في النهاية.</p>
+    <h4>4. الماضي (Perfekt)</h4>
+    <p><strong>haben/sein</strong> + التصريف الثالث. أفعال الحركة تستخدم sein.</p>
+    <h4>5. الأفعال الModal بالتفصيل</h4>
+    <table><tr><th>الفعل</th><th>المضارع</th><th>الماضي</th><th>المعنى</th></tr>
+    <tr><td>können</td><td>kann, kannst, kann</td><td>konnte</td><td>يستطيع</td></tr>
+    <tr><td>müssen</td><td>muss, musst, muss</td><td>musste</td><td>يجب</td></tr>
+    <tr><td>sollen</td><td>soll, sollst, soll</td><td>sollte</td><td>ينبغي</td></tr>
+    <tr><td>wollen</td><td>will, willst, will</td><td>wollte</td><td>يريد</td></tr>
+    <tr><td>dürfen</td><td>darf, darfst, darf</td><td>durfte</td><td>يجوز</td></tr>
+    <tr><td>mögen</td><td>mag, magst, mag</td><td>mochte</td><td>يحب</td></tr></table>
+    <p><strong>Modal في الماضي:</strong> Ich habe das machen <strong>können</strong>. (يبقى Modal مصدراً في النهاية!)</p>
+    <h4>6. الأفعال الانعكاسية</h4>
+    <p>sich freuen, sich interessieren, sich erinnern, sich vorbereiten, sich ausruhen.</p>
+    <h4>7. المقارنة والأفضلية</h4>
+    <p>-er, am ...-sten. (schnell → schneller → am schnellsten).<br>gut → besser → am besten, viel → mehr → am meisten.</p></div>`,
+    uk: `<h3>📐 Основи граматики – Опануйте для 60%+</h3>
+    <h4>1. Чотири відмінки (Die vier Fälle)</h4>
+    <table><tr><th>Відмінок</th><th>Питання</th><th>Приклад</th></tr>
+    <tr><td>Nominativ</td><td>Хто? Що?</td><td>Der Mann kauft.</td></tr>
+    <tr><td>Akkusativ</td><td>Кого? Що?</td><td>Ich sehe den Mann.</td></tr>
+    <tr><td>Dativ</td><td>Кому?</td><td>Ich gebe dem Mann das Buch.</td></tr>
+    <tr><td>Genitiv</td><td>Чий?</td><td>Das Auto des Mannes.</td></tr></table>
+    <p><strong>Прийменники Akkusativ:</strong> durch, für, gegen, ohne, um, bis. <strong>Прийменники Dativ:</strong> mit, nach, zu, bei, aus, seit, von, außer, gegenüber.</p>
+    <p><strong>Змінні прийменники:</strong> an, auf, hinter, in, neben, über, unter, vor, zwischen. <em>Рух = Akkusativ, Місце = Dativ.</em></p>
+    <h4>2. Артиклі та закінчення прикметників</h4>
+    <p>Після <strong>der/die/das</strong>: прикметник <strong>-e/-en</strong>.<br>Після <strong>ein/eine/ein</strong>: прикметник <strong>-er/-e/-es/-en/-em</strong>.</p>
+    <h4>3. Порядок слів</h4>
+    <p><strong>Головне речення:</strong> Дієслово завжди на другому місці.<br><strong>Підрядне речення:</strong> Спілка + підмет + ... + дієслово в кінці. (weil, dass, ob, wenn, als)<br><strong>Modal + Infinitiv:</strong> Modal на другому місці, інфінітив в кінці.</p>
+    <h4>4. Perfekt (Минулий час)</h4>
+    <p><strong>haben/sein</strong> + Partizip II. Дієслова руху використовують sein.</p>
+    <h4>5. Модальні дієслова</h4>
+    <table><tr><th>Дієслово</th><th>Теперішній</th><th>Минулий</th><th>Значення</th></tr>
+    <tr><td>können</td><td>kann, kannst, kann</td><td>konnte</td><td>могти</td></tr>
+    <tr><td>müssen</td><td>muss, musst, muss</td><td>musste</td><td>мусити</td></tr>
+    <tr><td>sollen</td><td>soll, sollst, soll</td><td>sollte</td><td>слід</td></tr>
+    <tr><td>wollen</td><td>will, willst, will</td><td>wollte</td><td>хотіти</td></tr>
+    <tr><td>dürfen</td><td>darf, darfst, darf</td><td>durfte</td><td>мати дозвіл</td></tr>
+    <tr><td>mögen</td><td>mag, magst, mag</td><td>mochte</td><td>любити</td></tr></table>
+    <p><strong>Modal у Perfekt:</strong> Ich habe das machen <strong>können</strong>. (Modal залишається інфінітивом у кінці!)</p>
+    <h4>6. Зворотні дієслова</h4>
+    <p>sich freuen, sich interessieren, sich erinnern, sich vorbereiten, sich ausruhen.</p>
+    <h4>7. Порівняльний та найвищий ступені</h4>
+    <p>-er, am ...-sten. (schnell → schneller → am schnellsten).<br>gut → besser → am besten, viel → mehr → am meisten.</p>`
   },
   writing: {
-    en: `<h3>Writing Formulas</h3>
+    en: `<h3>✍️ Writing Formulas – Memorize These for 10/10</h3>
     <p><strong>Teil 1 – SMS / Message (20–30 words):</strong></p>
     <ol>
       <li>Greeting: Hallo ..., Guten Tag ..., Liebe/Lieber ...</li>
@@ -2018,14 +2136,17 @@ const STUDY_GUIDE = {
       <li>Detail: Ask a question or give information.</li>
       <li>Close: Mit freundlichen Grüßen / Liebe Grüße + Name</li>
     </ol>
-    <p><strong>Golden phrases:</strong></p>
+    <p><strong>Golden phrases for any topic:</strong></p>
     <ul>
       <li>Ich freue mich auf ... / Ich freue mich, dass ...</li>
-      <li>Könnten Sie mir bitte helfen?</li>
-      <li>Ich habe eine Frage: ...</li>
-      <li>Was kostet ...? / Wann ist ...? / Wo ist ...?</li>
-    </ul>`,
-    tr: `<h3>Yazma Kalıpları</h3>
+      <li>Könnten Sie mir bitte helfen? / Könntest du mir bitte helfen?</li>
+      <li>Ich habe eine Frage: ... / Ich möchte wissen: ...</li>
+      <li>Was kostet ...? / Wann ist ...? / Wo ist ...? / Wie komme ich ...?</li>
+      <li>Es tut mir leid, aber ... / Leider kann ich nicht, weil ...</li>
+      <li>Treffen wir uns um ... Uhr am ... ?</li>
+    </ul>
+    <div class="example-box"><strong>Self-Check for 10 Points:</strong><br>✅ Anrede (greeting) present?<br>✅ All 3 bullet points answered?<br>✅ Word count exactly 20–30 (Teil 1) or 30–40 (Teil 2)?<br>✅ Grußformel (closing) present?<br>✅ Name at the end?<br>✅ No major grammar mistakes (cases, verb position)?</div>`,
+    tr: `<h3>✍️ Yazma Kalıpları – 10/10 İçin Ezberleyin</h3>
     <p><strong>Bölüm 1 – SMS / Mesaj (20–30 kelime):</strong></p>
     <ol>
       <li>Selamlama: Hallo ..., Guten Tag ..., Liebe/Lieber ...</li>
@@ -2041,14 +2162,17 @@ const STUDY_GUIDE = {
       <li>Detay: Soru sor veya bilgi ver.</li>
       <li>Kapanış: Mit freundlichen Grüßen / Liebe Grüße + İsim</li>
     </ol>
-    <p><strong>Altın cümleler:</strong></p>
+    <p><strong>Her konu için altın cümleler:</strong></p>
     <ul>
       <li>Ich freue mich auf ... / Ich freue mich, dass ...</li>
       <li>Könnten Sie mir bitte helfen?</li>
       <li>Ich habe eine Frage: ...</li>
       <li>Was kostet ...? / Wann ist ...? / Wo ist ...?</li>
-    </ul>`,
-    ar: `<div dir="rtl" style="text-align:right"><h3>صيغ الكتابة</h3>
+      <li>Es tut mir leid, aber ... / Leider kann ich nicht, weil ...</li>
+      <li>Treffen wir uns um ... Uhr am ... ?</li>
+    </ul>
+    <div class="example-box"><strong>10 Puan İçin Kendi-Kendini Kontrol:</strong><br>✅ Anrede var mı?<br>✅ Tüm 3 madde cevaplanmış mı?<br>✅ Kelime sayısı tam 20–30 (Bölüm 1) veya 30–40 (Bölüm 2)?<br>✅ Grußformel var mı?<br>✅ İsim sonunda mı?<br>✅ Büyük gramer hatası yok mu?</div>`,
+    ar: `<div dir="rtl" style="text-align:right"><h3>✍️ صيغ الكتابة – احفظها للحصول على 10/10</h3>
     <p><strong>الجزء 1 – رسالة قصيرة (20–30 كلمة):</strong></p>
     <ol>
       <li>التحية: Hallo ..., Guten Tag ..., Liebe/Lieber ...</li>
@@ -2061,17 +2185,20 @@ const STUDY_GUIDE = {
       <li>العنوان: Liebe/Lieber ..., Sehr geehrte Damen und Herren, ...</li>
       <li>المقدمة: شكر أو اعتذار. Vielen Dank für ... / Es tut mir leid, dass ...</li>
       <li>الفكرة الرئيسية: أحضر / لا أستطيع / أريد ...</li>
-      <li>التفاصيل: اطرح سؤالاً أوقدم معلومة.</li>
+      <li>التفاصيل: اطرح سؤالاً أو قدم معلومة.</li>
       <li>الختام: Mit freundlichen Grüßen / Liebe Grüße + الاسم</li>
     </ol>
-    <p><strong>العبارات الذهبية:</strong></p>
+    <p><strong>العبارات الذهبية لأي موضوع:</strong></p>
     <ul>
       <li>Ich freue mich auf ... / Ich freue mich, dass ...</li>
       <li>Könnten Sie mir bitte helfen?</li>
       <li>Ich habe eine Frage: ...</li>
       <li>Was kostet ...? / Wann ist ...? / Wo ist ...?</li>
-    </ul></div>`,
-    uk: `<h3>Письмові формули</h3>
+      <li>Es tut mir leid, aber ... / Leider kann ich nicht, weil ...</li>
+      <li>Treffen wir uns um ... Uhr am ... ?</li>
+    </ul>
+    <div class="example-box"><strong>قائمة التحقق للحصول على 10 نقاط:</strong><br>✅ هل يوجد تحية؟<br>✅ هل تم الإجابة على النقاط الثلاث جميعها؟<br>✅ هل عدد الكلمات 20–30 (الجزء 1) أو 30–40 (الجزء 2)؟<br>✅ هل يوجد ختام؟<br>✅ هل الاسم في النهاية؟<br>✅ هل لا توجد أخطاء نحوية كبيرة؟</div></div>`,
+    uk: `<h3>✍️ Письмові формули – Запам'ятайте для 10/10</h3>
     <p><strong>Частина 1 – SMS / Повідомлення (20–30 слів):</strong></p>
     <ol>
       <li>Вітання: Hallo ..., Guten Tag ..., Liebe/Lieber ...</li>
@@ -2087,199 +2214,406 @@ const STUDY_GUIDE = {
       <li>Деталь: Задайте питання або дайте інформацію.</li>
       <li>Закриття: Mit freundlichen Grüßen / Liebe Grüße + Ім'я</li>
     </ol>
-    <p><strong>Золоті фрази:</strong></p>
+    <p><strong>Золоті фрази для будь-якої теми:</strong></p>
     <ul>
       <li>Ich freue mich auf ... / Ich freue mich, dass ...</li>
       <li>Könnten Sie mir bitte helfen?</li>
       <li>Ich habe eine Frage: ...</li>
       <li>Was kostet ...? / Wann ist ...? / Wo ist ...?</li>
-    </ul>`
+      <li>Es tut mir leid, але ... / Leider kann ich nicht, weil ...</li>
+      <li>Treffen wir uns um ... Uhr am ... ?</li>
+    </ul>
+    <div class="example-box"><strong>Самоперевірка на 10 балів:</strong><br>✅ Привітання є?<br>✅ Всі 3 пункти відповіді?<br>✅ Кількість слів 20–30 (Частина 1) або 30–40 (Частина 2)?<br>✅ Заключна формула є?<br>✅ Ім'я в кінці?<br>✅ Немає великих граматичних помилок?</div>`
   },
   speaking: {
-    en: `<h3>Speaking Strategies</h3>
-    <p><strong>Teil 1 – Ask questions:</strong> Turn the keyword into a question.</p>
+    en: `<h3>🗣️ Speaking Strategies – 25/25 Points</h3>
+    <p><strong>Teil 1 – Ask questions (3 minutes):</strong> Turn the keyword into a question. Use Sie or du depending on context.</p>
     <ul>
       <li>Wohnort? → "Wo wohnen Sie?" / "Wo wohnst du?"</li>
       <li>Hobby? → "Was sind Ihre Hobbys?" / "Was machst du gern?"</li>
       <li>Beruf? → "Was sind Sie von Beruf?" / "Was machst du beruflich?"</li>
+      <li>Familie? → "Wie viele Personen gibt es in Ihrer Familie?"</li>
+      <li>Essen? → "Was essen Sie gern?" / "Was isst du am liebsten?"</li>
     </ul>
-    <p><strong>Teil 2 – Talk about yourself:</strong> Use connectors.</p>
+    <p><strong>Teil 2 – Talk about yourself (2 minutes):</strong> Use connectors to sound natural.</p>
     <ul>
-      <li>zuerst, dann, danach, später</li>
-      <li>außerdem, deshalb, trotzdem</li>
-      <li>weil, dass (for subordinate clauses)</li>
+      <li>Sequence: zuerst, dann, danach, später, am Ende</li>
+      <li>Contrast: aber, trotzdem, allerdings</li>
+      <li>Reason: weil, deshalb, deswegen</li>
+      <li>Addition: außerdem, auch, und</li>
     </ul>
-    <p><strong>Teil 3 – Plan together:</strong></p>
+    <p><strong>Teil 3 – Plan together (3 minutes):</strong></p>
     <ul>
       <li>"Hast du am ... Zeit?" / "Hast du um ... Uhr Zeit?"</li>
       <li>"Leider nicht, ich habe dann ..."</li>
       <li>"Wie wäre es mit ...?" / "Was hältst du von ...?"</li>
-      <li>"Das passt gut!" / "Super, bis dann!"</li>
-    </ul>`,
-    tr: `<h3>Konuşma Stratejileri</h3>
-    <p><strong>Bölüm 1 – Soru sor:</strong> Anahtar kelimeyi soruya çevir.</p>
+      <li>"Das passt gut!" / "Super, bis dann!" / "Machen wir so!"</li>
+      <li>"Dann treffen wir uns um ... Uhr am ..."</li>
+    </ul>
+    <div class="example-box"><strong>Sample Teil 2 (Topic: Weekend):</strong><br>"Am Wochenende mache ich viele Dinge. <strong>Zuerst</strong> schlafe ich lange, <strong>dann</strong> frühstücke ich mit meiner Familie. <strong>Danach</strong> gehe ich oft spazieren oder treffe Freunde. <strong>Am Abend</strong> koche ich das Abendessen. <strong>Manchmal</strong> gehe ich ins Kino, <strong>aber</strong> meistens bleibe ich zu Hause."</div>`,
+    tr: `<h3>🗣️ Konuşma Stratejileri – 25/25 Puan</h3>
+    <p><strong>Bölüm 1 – Soru sor (3 dakika):</strong> Anahtar kelimeyi soruya çevirin.</p>
     <ul>
       <li>Wohnort? → "Wo wohnen Sie?" / "Wo wohnst du?"</li>
       <li>Hobby? → "Was sind Ihre Hobbys?" / "Was machst du gern?"</li>
       <li>Beruf? → "Was sind Sie von Beruf?" / "Was machst du beruflich?"</li>
+      <li>Familie? → "Wie viele Personen gibt es in Ihrer Familie?"</li>
+      <li>Essen? → "Was essen Sie gern?" / "Was isst du am liebsten?"</li>
     </ul>
-    <p><strong>Bölüm 2 – Kendinden bahset:</strong> Bağlaçlar kullan.</p>
+    <p><strong>Bölüm 2 – Kendinden bahset (2 dakika):</strong> Bağlaçlar kullanın.</p>
     <ul>
-      <li>zuerst, dann, danach, später</li>
-      <li>außerdem, deshalb, trotzdem</li>
-      <li>weil, dass (yan cümleler için)</li>
+      <li>Sıralama: zuerst, dann, danach, später, am Ende</li>
+      <li>Zıtlık: aber, trotzdem, allerdings</li>
+      <li>Sebep: weil, deshalb, deswegen</li>
+      <li>Ek: außerdem, auch, und</li>
     </ul>
-    <p><strong>Bölüm 3 – Beraber plan yap:</strong></p>
+    <p><strong>Bölüm 3 – Beraber plan yap (3 dakika):</strong></p>
     <ul>
       <li>"Hast du am ... Zeit?" / "Hast du um ... Uhr Zeit?"</li>
       <li>"Leider nicht, ich habe dann ..."</li>
       <li>"Wie wäre es mit ...?" / "Was hältst du von ...?"</li>
-      <li>"Das passt gut!" / "Super, bis dann!"</li>
-    </ul>`,
-    ar: `<div dir="rtl" style="text-align:right"><h3>استراتيجيات التحدث</h3>
-    <p><strong>الجزء 1 – طرح الأسئلة:</strong> حوّل الكلمة المفتاحية إلى سؤال.</p>
+      <li>"Das passt gut!" / "Super, bis dann!" / "Machen wir so!"</li>
+    </ul>
+    <div class="example-box"><strong>Örnek Bölüm 2 (Konu: Hafta sonu):</strong><br>"Am Wochenende mache ich viele Dinge. <strong>Zuerst</strong> schlafe ich lange, <strong>dann</strong> frühstücke ich mit meiner Familie. <strong>Danach</strong> gehe ich oft spazieren oder treffe Freunde. <strong>Am Abend</strong> koche ich das Abendessen. <strong>Manchmal</strong> gehe ich ins Kino, <strong>aber</strong> meistens bleibe ich zu Hause."</div>`,
+    ar: `<div dir="rtl" style="text-align:right"><h3>🗣️ استراتيجيات التحدث – 25/25 نقطة</h3>
+    <p><strong>الجزء 1 – طرح الأسئلة (3 دق):</strong> حوّل الكلمة المفتاحية إلى سؤال.</p>
     <ul>
       <li>Wohnort? → "Wo wohnen Sie?" / "Wo wohnst du?"</li>
       <li>Hobby? → "Was sind Ihre Hobbys?" / "Was machst du gern?"</li>
       <li>Beruf? → "Was sind Sie von Beruf?" / "Was machst du beruflich?"</li>
+      <li>Familie? → "Wie viele Personen gibt es in Ihrer Familie?"</li>
+      <li>Essen? → "Was essen Sie gern?" / "Was isst du am liebsten?"</li>
     </ul>
-    <p><strong>الجزء 2 – التحدث عن النفس:</strong> استخدم روابط.</p>
+    <p><strong>الجزء 2 – التحدث عن النفس (2 دق):</strong> استخدم روابط.</p>
     <ul>
-      <li>zuerst, dann, danach, später</li>
-      <li>außerdem, deshalb, trotzdem</li>
-      <li>weil, dass (للجمل الفرعية)</li>
+      <li>التسلسل: zuerst, dann, danach, später, am Ende</li>
+      <li>التناقض: aber, trotzdem, allerdings</li>
+      <li>السبب: weil, deshalb, deswegen</li>
+      <li>الإضافة: außerdem, auch, und</li>
     </ul>
-    <p><strong>الجزء 3 – التخطيط معاً:</strong></p>
+    <p><strong>الجزء 3 – التخطيط معاً (3 دق):</strong></p>
     <ul>
       <li>"Hast du am ... Zeit?" / "Hast du um ... Uhr Zeit?"</li>
       <li>"Leider nicht, ich habe dann ..."</li>
       <li>"Wie wäre es mit ...?" / "Was hältst du von ...?"</li>
-      <li>"Das passt gut!" / "Super, bis dann!"</li>
-    </ul></div>`,
-    uk: `<h3>Стратегії говоріння</h3>
-    <p><strong>Частина 1 – Питання:</strong> Перетворіть ключове слово на питання.</p>
+      <li>"Das passt gut!" / "Super, bis dann!" / "Machen wir so!"</li>
+    </ul>
+    <div class="example-box"><strong>نموذج الجزء 2 (الموضوع: عطلة نهاية الأسبوع):</strong><br>"Am Wochenende mache ich viele Dinge. <strong>Zuerst</strong> schlafe ich lange, <strong>dann</strong> frühstücke ich mit meiner Familie. <strong>Danach</strong> gehe ich oft spazieren oder treffe Freunde. <strong>Am Abend</strong> koche ich das Abendessen. <strong>Manchmal</strong> gehe ich ins Kino, <strong>aber</strong> meistens bleibe ich zu Hause."</div></div>`,
+    uk: `<h3>🗣️ Стратегії говоріння – 25/25 балів</h3>
+    <p><strong>Частина 1 – Питання (3 хв):</strong> Перетворіть ключове слово на питання.</p>
     <ul>
       <li>Wohnort? → "Wo wohnen Sie?" / "Wo wohnst du?"</li>
       <li>Hobby? → "Was sind Ihre Hobbys?" / "Was machst du gern?"</li>
       <li>Beruf? → "Was sind Sie von Beruf?" / "Was machst du beruflich?"</li>
+      <li>Familie? → "Wie viele Personen gibt es in Ihrer Familie?"</li>
+      <li>Essen? → "Was essen Sie gern?" / "Was isst du am liebsten?"</li>
     </ul>
-    <p><strong>Частина 2 – Розповідь про себе:</strong> Використовуйте сполучники.</p>
+    <p><strong>Частина 2 – Розповідь про себе (2 хв):</strong> Використовуйте сполучники.</p>
     <ul>
-      <li>zuerst, dann, danach, später</li>
-      <li>außerdem, deshalb, trotzdem</li>
-      <li>weil, dass (для підрядних речень)</li>
+      <li>Послідовність: zuerst, dann, danach, später, am Ende</li>
+      <li>Контраст: aber, trotzdem, allerdings</li>
+      <li>Причина: weil, deshalb, deswegen</li>
+      <li>Додавання: außerdem, auch, und</li>
     </ul>
-    <p><strong>Частина 3 – Спільне планування:</strong></p>
+    <p><strong>Частина 3 – Спільне планування (3 хв):</strong></p>
     <ul>
       <li>"Hast du am ... Zeit?" / "Hast du um ... Uhr Zeit?"</li>
       <li>"Leider nicht, ich habe dann ..."</li>
       <li>"Wie wäre es mit ...?" / "Was hältst du von ...?"</li>
-      <li>"Das passt gut!" / "Super, bis dann!"</li>
-    </ul>`
+      <li>"Das passt gut!" / "Super, bis dann!" / "Machen wir so!"</li>
+    </ul>
+    <div class="example-box"><strong>Зразок Частини 2 (Тема: Вихідні):</strong><br>"Am Wochenende mache ich viele Dinge. <strong>Zuerst</strong> schlafe ich lange, <strong>dann</strong> frühstücke ich mit meiner Familie. <strong>Danach</strong> gehe ich oft spazieren oder treffe Freunde. <strong>Am Abend</strong> koche ich das Abendessen. <strong>Manchmal</strong> gehe ich ins Kino, <strong>aber</strong> meistens bleibe ich zu Hause."</div>`
   },
   listening: {
-    en: `<h3>Listening Tips</h3>
+    en: `<h3>🎧 Listening Tips – 20/20 Points</h3>
     <ul>
-      <li><strong>Teil 1:</strong> Listen for numbers, times, prices, names. Write them down immediately.</li>
-      <li><strong>Teil 2:</strong> Use abbreviations. You hear the text only once. Write short notes (e.g., "Zahnarzt" = ZA).</li>
-      <li><strong>Teil 3:</strong> Focus on question words: wo, wann, was, wie, warum. The answer is usually one word or a short phrase.</li>
-      <li><strong>Teil 4:</strong> True/False. Listen for negatives: <em>nicht, kein, nie, nichts, niemand</em>. If the statement contradicts the text, it is false.</li>
-    </ul>`,
-    tr: `<h3>Dinleme İpuçları</h3>
+      <li><strong>Teil 1 (Announcements):</strong> Listen for numbers, times, prices, names. Write them down immediately. The answer is usually a specific detail.</li>
+      <li><strong>Teil 2 (Planning):</strong> Use abbreviations. You hear the text only once. Write short notes (e.g., "Zahnarzt" = ZA). Match days to activities quickly.</li>
+      <li><strong>Teil 3 (Dialogues):</strong> Focus on question words: wo, wann, was, wie, warum. The answer is usually one word or a short phrase. Watch out for distractors!</li>
+      <li><strong>Teil 4 (Interview):</strong> True/False. Listen for negatives: <em>nicht, kein, nie, nichts, niemand, falsch, leider</em>. If the statement contradicts the text, it is false. You hear it twice – use the second listening to verify.</li>
+    </ul>
+    <div class="example-box"><strong>Common Traps in Listening:</strong><br>• They say the time but then change it ("um 10 Uhr... nein, um 11 Uhr").<br>• They mention two places but only one is correct.<br>• Negatives: "Ich bin nicht krank" = false if the statement says "Sie ist krank".<br>• Numbers: "20 Minuten" vs "30 Minuten" – write immediately!</div>`,
+    tr: `<h3>🎧 Dinleme İpuçları – 20/20 Puan</h3>
     <ul>
-      <li><strong>Bölüm 1:</strong> Sayıları, zamanları, fiyatları ve isimleri dinleyin. Hemen yazın.</li>
-      <li><strong>Bölüm 2:</strong> Kısaltmalar kullanın. Metni sadece bir kez duyarsınız. Kısa notlar alın (örn. "Zahnarzt" = ZA).</li>
-      <li><strong>Bölüm 3:</strong> Soru kelimelerine odaklanın: wo, wann, was, wie, warum. Cevap genellikle bir kelime veya kısa bir ifadedir.</li>
-      <li><strong>Bölüm 4:</strong> Doğru/Yanlış. Olumsuzlukları dinleyin: <em>nicht, kein, nie, nichts, niemand</em>. İfade metinle çelişiyorsa yanlıştır.</li>
-    </ul>`,
-    ar: `<div dir="rtl" style="text-align:right"><h3>نصائح الاستماع</h3>
+      <li><strong>Bölüm 1 (Anonslar):</strong> Sayıları, zamanları, fiyatları ve isimleri dinleyin. Hemen yazın. Cevap genellikle spesifik bir detaydır.</li>
+      <li><strong>Bölüm 2 (Planlama):</strong> Kısaltmalar kullanın. Metni sadece bir kez duyarsınız. Kısa notlar alın (örn. "Zahnarzt" = ZA).</li>
+      <li><strong>Bölüm 3 (Diyaloglar):</strong> Soru kelimelerine odaklanın: wo, wann, was, wie, warum. Cevap genellikle bir kelime veya kısa bir ifadedir. Dikkat dağıtıcılara dikkat!</li>
+      <li><strong>Bölüm 4 (Röportaj):</strong> Doğru/Yanlış. Olumsuzlukları dinleyin: <em>nicht, kein, nie, nichts, niemand, falsch, leider</em>. İfade metinle çelişiyorsa yanlıştır. İki kez duyarsınız – ikincisinde doğrulayın.</li>
+    </ul>
+    <div class="example-box"><strong>Dinlemede Yaygın Tuzaklar:</strong><br>• Zaman söylerler ama sonra değiştirirler ("um 10 Uhr... nein, um 11 Uhr").<br>• İki yerden bahsederler ama sadece biri doğrudur.<br>• Olumsuzlar: "Ich bin nicht krank" = yanlış eğer ifade "Sie ist krank" diyorsa.<br>• Sayılar: "20 Minuten" vs "30 Minuten" – hemen yazın!</div>`,
+    ar: `<div dir="rtl" style="text-align:right"><h3>🎧 نصائح الاستماع – 20/20 نقطة</h3>
     <ul>
-      <li><strong>الجزء 1:</strong> استمع للأرقام، الأوقات، الأسعار، الأسماء. اكتبها فوراً.</li>
-      <li><strong>الجزء 2:</strong> استخدم الاختصارات. تسمع النص مرة واحدة فقط. دوّن ملاحظات قصيرة (مثلاً "Zahnarzt" = ZA).</li>
-      <li><strong>الجزء 3:</strong> ركّز على كلمات السؤال: wo, wann, was, wie, warum. الإجابة عادةً كلمة واحدة أو عبارة قصيرة.</li>
-      <li><strong>الجزء 4:</strong> صحيح/خطأ. استمع للنفي: <em>nicht, kein, nie, nichts, niemand</em>. إذا تناقضت العبارة مع النص، فهي خطأ.</li>
-    </ul></div>`,
-    uk: `<h3>Поради для слухання</h3>
+      <li><strong>الجزء 1 (إعلانات):</strong> استمع للأرقام، الأوقات، الأسعار، الأسماء. اكتبها فوراً. الإجابة عادةً تفصيل محدد.</li>
+      <li><strong>الجزء 2 (تخطيط):</strong> استخدم الاختصارات. تسمع النص مرة واحدة فقط. دوّن ملاحظات قصيرة (مثلاً "Zahnarzt" = ZA).</li>
+      <li><strong>الجزء 3 (حوارات):</strong> ركّز على كلمات السؤال: wo, wann, was, wie, warum. الإجابة عادةً كلمة واحدة أو عبارة قصيرة. احذر المشتتات!</li>
+      <li><strong>الجزء 4 (مقابلة):</strong> صحيح/خطأ. استمع للنفي: <em>nicht, kein, nie, nichts, niemand, falsch, leider</em>. إذا تناقضت العبارة مع النص، فهي خطأ. تسمعها مرتين – استخدم الثانية للتحقق.</li>
+    </ul>
+    <div class="example-box"><strong>الفخاخ الشائعة في الاستماع:</strong><br>• يقولون الوقت ثم يغيرونه ("um 10 Uhr... nein, um 11 Uhr").<br>• يذكرون مكانين لكن واحداً فقط صحيح.<br>• النفي: "Ich bin nicht krank" = خطأ إذا كانت العبارة تقول "Sie ist krank".<br>• الأرقام: "20 Minuten" مقابل "30 Minuten" – اكتب فوراً!</div></div>`,
+    uk: `<h3>🎧 Поради для слухання – 20/20 балів</h3>
     <ul>
-      <li><strong>Частина 1:</strong> Слухайте числа, час, ціни, імена. Записуйте їх одразу.</li>
-      <li><strong>Частина 2:</strong> Використовуйте скорочення. Текст ви чуєте лише раз. Робіть короткі нотатки (напр. "Zahnarzt" = ZA).</li>
-      <li><strong>Частина 3:</strong> Зосередьтеся на питальних словах: wo, wann, was, wie, warum. Відповідь зазвичай одне слово або коротка фраза.</li>
-      <li><strong>Частина 4:</strong> Правда/Брехня. Слухайте заперечення: <em>nicht, kein, nie, nichts, niemand</em>. Якщо твердження суперечить тексту — воно хибне.</li>
-    </ul>`
+      <li><strong>Частина 1 (Оголошення):</strong> Слухайте числа, час, ціни, імена. Записуйте їх одразу. Відповідь зазвичай – конкретна деталь.</li>
+      <li><strong>Частина 2 (Планування):</strong> Використовуйте скорочення. Текст ви чуєте лише раз. Робіть короткі нотатки (напр. "Zahnarzt" = ZA).</li>
+      <li><strong>Частина 3 (Діалоги):</strong> Зосередьтеся на питальних словах: wo, wann, was, wie, warum. Відповідь зазвичай одне слово або коротка фраза. Остерігайтеся відволікаючих факторів!</li>
+      <li><strong>Частина 4 (Інтерв'ю):</strong> Правда/Брехня. Слухайте заперечення: <em>nicht, kein, nie, nichts, niemand, falsch, leider</em>. Якщо твердження суперечить тексту — воно хибне. Чуєте двічі — використайте друге прослуховування для перевірки.</li>
+    </ul>
+    <div class="example-box"><strong>Поширені пастки у слуханні:</strong><br>• Кажуть час, але потім змінюють ("um 10 Uhr... nein, um 11 Uhr").<br>• Згадують два місця, але правильне лише одне.<br>• Заперечення: "Ich bin nicht krank" = хибно, якщо твердження каже "Sie ist krank".<br>• Числа: "20 Minuten" проти "30 Minuten" – записуйте одразу!</div>`
   },
   reading: {
-    en: `<h3>Reading Tips</h3>
+    en: `<h3>📖 Reading Tips – 25/25 Points</h3>
     <ul>
-      <li><strong>Teil 1:</strong> Read the text quickly first. Then read the questions. Don't choose an answer just because you see the same word – check the meaning.</li>
-      <li><strong>Teil 2:</strong> Scan for keywords. If the question asks for "Küche", look for "Möbel" or "Küche" in the text.</li>
-      <li><strong>Teil 3:</strong> The email is in chronological order. Details usually appear in the same order as the questions.</li>
-      <li><strong>Teil 4:</strong> Eliminate impossible options first. One advertisement will not match anyone (X).</li>
-    </ul>`,
-    tr: `<h3>Okuma İpuçları</h3>
+      <li><strong>Teil 1 (Signs/Texts):</strong> Read the text quickly first. Then read the questions. Don't choose an answer just because you see the same word – check the meaning. Watch for negatives (nicht, kein).</li>
+      <li><strong>Teil 2 (Info Boards):</strong> Scan for keywords. If the question asks for "Küche", look for "Möbel" or "Küche" in the text. Eliminate impossible options first.</li>
+      <li><strong>Teil 3 (Emails):</strong> The email is in chronological order. Details usually appear in the same order as the questions. Pay attention to dates, times, and names.</li>
+      <li><strong>Teil 4 (Matching):</strong> Eliminate impossible options first. One advertisement will not match anyone (X). Read the "need" carefully – look for specific numbers ("50 Gäste", "20 Plätze") or specific features ("Kinder", "WLAN").</li>
+    </ul>
+    <div class="example-box"><strong>Time Management for Lesen:</strong><br>• Teil 1: 5 minutes (1 min per question)<br>• Teil 2: 5 minutes (scan quickly)<br>• Teil 3: 7 minutes (read email carefully)<br>• Teil 4: 8 minutes (read all ads first, then match)<br>• Reserve 5 minutes to review answers!</div>`,
+    tr: `<h3>📖 Okuma İpuçları – 25/25 Puan</h3>
     <ul>
-      <li><strong>Bölüm 1:</strong> Metni önce hızlıca okuyun. Sonra soruları okuyun. Sadece aynı kelimeyi gördüğünüz için cevap seçmeyin – anlamı kontrol edin.</li>
-      <li><strong>Bölüm 2:</strong> Anahtar kelimeleri tarayın. Soru "Küche" diyorsa, metinde "Möbel" veya "Küche" arayın.</li>
-      <li><strong>Bölüm 3:</strong> E-posta kronolojik sıradadır. Detaylar genellikle sorularla aynı sıradadır.</li>
-      <li><strong>Bölüm 4:</strong> Önce imkansız seçenekleri eleyin. Bir ilan kimseyle eşleşmeyecektir (X).</li>
-    </ul>`,
-    ar: `<div dir="rtl" style="text-align:right"><h3>نصائح القراءة</h3>
+      <li><strong>Bölüm 1 (Tabelalar/Metinler):</strong> Metni önce hızlıca okuyun. Sonra soruları okuyun. Sadece aynı kelimeyi gördüğünüz için cevap seçmeyin – anlamı kontrol edin. Olumsuzlara dikkat edin (nicht, kein).</li>
+      <li><strong>Bölüm 2 (Bilgi Panoları):</strong> Anahtar kelimeleri tarayın. Soru "Küche" diyorsa, metinde "Möbel" veya "Küche" arayın. Önce imkansız seçenekleri eleyin.</li>
+      <li><strong>Bölüm 3 (E-postalar):</strong> E-posta kronolojik sıradadır. Detaylar genellikle sorularla aynı sıradadır. Tarihlere, saatlere ve isimlere dikkat edin.</li>
+      <li><strong>Bölüm 4 (Eşleştirme):</strong> Önce imkansız seçenekleri eleyin. Bir ilan kimseyle eşleşmeyecektir (X). "İhtiyacı" dikkatlice okuyun – spesifik sayılar ("50 Gäste", "20 Plätze") veya özellikler ("Kinder", "WLAN") arayın.</li>
+    </ul>
+    <div class="example-box"><strong>Okuma için Zaman Yönetimi:</strong><br>• Bölüm 1: 5 dakika (soru başına 1 dk)<br>• Bölüm 2: 5 dakika (hızlı tarama)<br>• Bölüm 3: 7 dakika (e-postayı dikkatle oku)<br>• Bölüm 4: 8 dakika (önce tüm ilanları oku, sonra eşleştir)<br>• Cevapları gözden geçirmek için 5 dakika ayır!</div>`,
+    ar: `<div dir="rtl" style="text-align:right"><h3>📖 نصائح القراءة – 25/25 نقطة</h3>
     <ul>
-      <li><strong>الجزء 1:</strong> اقرأ النص بسرعة أولاً. ثم اقرأ الأسئلة. لا تختر إجابة فقط لأنك ترى نفس الكلمة – تحقق من المعنى.</li>
-      <li><strong>الجزء 2:</strong> ابحث عن الكلمات المفتاحية. إذا كان السؤال عن "Küche"، ابحث عن "Möbel" أو "Küche" في النص.</li>
-      <li><strong>الجزء 3:</strong> البريد الإلكتروني مرتب زمنياً. التفاصيل عادةً تظهر بنفس ترتيب الأسئلة.</li>
-      <li><strong>الجزء 4:</strong> استبعد الخيارات المستحيلة أولاً. إعلان واحد لن يطابق أحداً (X).</li>
-    </ul></div>`,
-    uk: `<h3>Поради для читання</h3>
+      <li><strong>الجزء 1 (لافتات/نصوص):</strong> اقرأ النص بسرعة أولاً. ثم اقرأ الأسئلة. لا تختر إجابة فقط لأنك ترى نفس الكلمة – تحقق من المعنى. انتبه للنفي (nicht, kein).</li>
+      <li><strong>الجزء 2 (لوحات معلومات):</strong> ابحث عن الكلمات المفتاحية. إذا كان السؤال عن "Küche"، ابحث عن "Möbel" أو "Küche" في النص. استبعد الخيارات المستحيلة أولاً.</li>
+      <li><strong>الجزء 3 (رسائل بريد):</strong> البريد الإلكتروني مرتب زمنياً. التفاصيل عادةً تظهر بنفس ترتيب الأسئلة. انتبه للتواريخ والأوقات والأسماء.</li>
+      <li><strong>الجزء 4 (مطابقة):</strong> استبعد الخيارات المستحيلة أولاً. إعلان واحد لن يطابق أحداً (X). اقرأ "الحاجة" بعناية – ابحث عن أرقام محددة ("50 Gäste"، "20 Plätze") أو ميزات محددة ("Kinder"، "WLAN").</li>
+    </ul>
+    <div class="example-box"><strong>إدارة الوقت للقراءة:</strong><br>• الجزء 1: 5 دقائق (دقيقة لكل سؤال)<br>• الجزء 2: 5 دقائق (مسح سريع)<br>• الجزء 3: 7 دقائق (اقرأ البريد بعناية)<br>• الجزء 4: 8 دقائق (اقرأ جميع الإعلانات أولاً، ثم طابق)<br>• احتفظ بـ 5 دقائق لمراجعة الإجابات!</div></div>`,
+    uk: `<h3>📖 Поради для читання – 25/25 балів</h3>
     <ul>
-      <li><strong>Частина 1:</strong> Швидко прочитайте текст. Потім читайте питання. Не обирайте відповідь лише тому, що бачите те саме слово – перевірте значення.</li>
-      <li><strong>Частина 2:</strong> Шукайте ключові слова. Якщо питання про "Küche", шукайте "Möbel" або "Küche" у тексті.</li>
-      <li><strong>Частина 3:</strong> Лист у хронологічному порядку. Деталі зазвичай з'являються в тому ж порядку, що й питання.</li>
-      <li><strong>Частина 4:</strong> Спочатку виключіть неможливі варіанти. Одне оголошення не підійде нікому (X).</li>
-    </ul>`
+      <li><strong>Частина 1 (Вивіски/Тексти):</strong> Швидко прочитайте текст. Потім читайте питання. Не обирайте відповідь лише тому, що бачите те саме слово – перевірте значення. Звертайте увагу на заперечення (nicht, kein).</li>
+      <li><strong>Частина 2 (Інформаційні таблиці):</strong> Шукайте ключові слова. Якщо питання про "Küche", шукайте "Möbel" або "Küche" у тексті. Спочатку виключайте неможливі варіанти.</li>
+      <li><strong>Частина 3 (Листи):</strong> Лист у хронологічному порядку. Деталі зазвичай з'являються в тому ж порядку, що й питання. Звертайте увагу на дати, час і імена.</li>
+      <li><strong>Частина 4 (Відповідність):</strong> Спочатку виключайте неможливі варіанти. Одне оголошення не підійде нікому (X). Уважно читайте "потребу" – шукайте конкретні числа ("50 Gäste", "20 Plätze") або особливості ("Kinder", "WLAN").</li>
+    </ul>
+    <div class="example-box"><strong>Управління часом для читання:</strong><br>• Частина 1: 5 хвилин (1 хв на питання)<br>• Частина 2: 5 хвилин (швидке сканування)<br>• Частина 3: 7 хвилин (уважне читання листа)<br>• Частина 4: 8 хвилин (спочатку всі оголошення, потім відповідність)<br>• Залиште 5 хвилин на перевірку!</div>`
   },
   vocabulary: {
-    en: `<h3>Vocabulary by Theme</h3>
-    <p><strong>Family:</strong> die Mutter, der Vater, die Eltern, der Bruder, die Schwester, das Kind, die Kinder, der Sohn, die Tochter, verheiratet, geschieden, ledig.</p>
-    <p><strong>Home:</strong> die Wohnung, das Haus, das Zimmer, die Küche, das Bad, das Schlafzimmer, das Wohnzimmer, der Balkon, der Keller, die Miete, der Nachbar.</p>
-    <p><strong>Work:</strong> die Arbeit, der Job, der Beruf, der Chef, die Chefin, das Büro, das Gehalt, die Kollegen, arbeitslos, die Bewerbung, das Vorstellungsgespräch.</p>
-    <p><strong>Food:</strong> das Frühstück, das Mittagessen, das Abendessen, das Brot, das Brötchen, der Käse, die Wurst, das Gemüse, das Obst, vegetarisch, vegan, lecker, salzig, süß.</p>
-    <p><strong>Travel:</strong> die Reise, der Urlaub, das Flugzeug, der Zug, der Bahnhof, das Ticket, die Fahrkarte, der Koffer, der Reisepass, die Grenze, das Hotel.</p>
-    <p><strong>Health:</strong> der Arzt, die Ärztin, die Apotheke, das Krankenhaus, krank, die Erkältung, das Fieber, die Schmerzen, der Termin, die Versicherung, die Medizin.</p>
-    <p><strong>Shopping:</strong> der Supermarkt, das Geschäft, einkaufen, der Preis, die Rechnung, das Angebot, die Quittung, teuer, billig, umsonst.</p>
-    <p><strong>Weather:</strong> das Wetter, sonnig, regnerisch, windig, schneien, die Temperatur, warm, kalt, heiß, der Schirm.</p>
-    <p><strong>Hobbies:</strong> das Hobby, lesen, schwimmen, wandern, kochen, tanzen, singen, malen, das Fahrrad, das Fitnessstudio.</p>`,
-    tr: `<h3>Konulara Göre Kelime Dağarcığı</h3>
-    <p><strong>Aile:</strong> die Mutter (anne), der Vater (baba), die Eltern (ebeveynler), der Bruder (erkek kardeş), die Schwester (kız kardeş), verheiratet (evli), geschieden (boşanmış), ledig (bekar).</p>
-    <p><strong>Ev:</strong> die Wohnung (apartman), das Haus (ev), das Zimmer (oda), die Küche (mutfak), das Bad (banyo), der Balkon (balkon), die Miete (kira), der Nachbar (komşu).</p>
-    <p><strong>İş:</strong> die Arbeit (iş), der Job (meslek), der Beruf (meslek), der Chef (patron), das Büro (ofis), das Gehalt (maaş), die Kollegen (iş arkadaşları), arbeitslos (işsiz).</p>
-    <p><strong>Yemek:</strong> das Frühstück (kahvaltı), das Mittagessen (öğle yemeği), das Abendessen (akşam yemeği), das Brot (ekmek), das Gemüse (sebze), das Obst (meyve), vegetarisch (vejetaryen), lecker (lezzetli).</p>
-    <p><strong>Seyahat:</strong> die Reise (seyahat), der Urlaub (tatil), das Flugzeug (uçak), der Zug (tren), der Bahnhof (tren istasyonu), die Fahrkarte (bilet), der Koffer (bavul), das Hotel (otel).</p>
-    <p><strong>Sağlık:</strong> der Arzt (doktor), die Apotheke (eczane), das Krankenhaus (hastane), krank (hasta), die Erkältung (soğuk algınlığı), das Fieber (ateş), die Schmerzen (ağrı), der Termin (randevu).</p>
-    <p><strong>Alışveriş:</strong> der Supermarkt (süpermarket), einkaufen (alışveriş yapmak), der Preis (fiyat), die Rechnung (fatura), teuer (pahalı), billig (ucuz).</p>
-    <p><strong>Hava:</strong> das Wetter (hava), sonnig (güneşli), regnerisch (yağmurlu), windig (rüzgarlı), schneien (kar yağmak), warm (ılık), kalt (soğuk).</p>
-    <p><strong>Hobiler:</strong> das Hobby (hobi), lesen (okumak), schwimmen (yüzmek), wandern (doğa yürüyüşü), kochen (yemek yapmak), das Fahrrad (bisiklet).</p>`,
-    ar: `<div dir="rtl" style="text-align:right"><h3>المفردات حسب الموضوع</h3>
-    <p><strong>العائلة:</strong> die Mutter (الأم)، der Vater (الأب)، die Eltern (الوالدان)، der Bruder (الأخ)، die Schwester (الأخت)، verheiratet (متزوج)، geschieden (مطلق)، ledig (أعزب).</p>
-    <p><strong>المنزل:</strong> die Wohnung (شقة)، das Haus (منزل)، das Zimmer (غرفة)، die Küche (مطبخ)، das Bad (حمام)، der Balkon (شرفة)، die Miete (إيجار)، der Nachbar (جار).</p>
-    <p><strong>العمل:</strong> die Arbeit (عمل)، der Job (وظيفة)، der Beruf (مهنة)، der Chef (مدير)، das Büro (مكتب)، das Gehalt (راتب)، die Kollegen (زملاء)، arbeitslos (عاطل).</p>
-    <p><strong>الطعام:</strong> das Frühstück (فطور)، das Mittagessen (غداء)، das Abendessen (عشاء)، das Brot (خبز)، das Gemüse (خضار)، das Obst (فاكهة)، vegetarisch (نباتي)، lecker (لذيذ).</p>
-    <p><strong>السفر:</strong> die Reise (رحلة)، der Urlaub (إجازة)، das Flugzeug (طائرة)، der Zug (قطار)، der Bahnhof (محطة قطار)، die Fahrkarte (تذكرة)، der Koffer (حقيبة)، das Hotel (فندق).</p>
-    <p><strong>الصحة:</strong> der Arzt (طبيب)، die Apotheke (صيدلية)، das Krankenhaus (مستشفى)، krank (مريض)، die Erkältung (زكام)، das Fieber (حمى)، die Schmerzen (ألم)، der Termin (موعد).</p>
-    <p><strong>التسوق:</strong> der Supermarkt (سوبرماركت)، einkaufen (تسوق)، der Preis (سعر)، die Rechnung (فاتورة)، teuer (غالي)، billig (رخيص).</p>
-    <p><strong>الطقس:</strong> das Wetter (طقس)، sonnig (مشمس)، regnerisch (ممطر)، windig (عاصف)، schneien (ثلج)، warm (دافئ)، kalt (بارد).</p>
-    <p><strong>الهوايات:</strong> das Hobby (هواية)، lesen (قراءة)، schwimmen (سباحة)، wandern (تنزه)، kochen (طبخ)، das Fahrrad (دراجة).</p></div>`,
-    uk: `<h3>Словниковий запас за темами</h3>
-    <p><strong>Сім'я:</strong> die Mutter (мати), der Vater (батько), die Eltern (батьки), der Bruder (брат), die Schwester (сестра), verheiratet (одружений), geschieden (розлучений), ledig (неодружений).</p>
-    <p><strong>Дім:</strong> die Wohnung (квартира), das Haus (будинок), das Zimmer (кімната), die Küche (кухня), das Bad (ванна), der Balkon (балкон), die Miete (оренда), der Nachbar (сусід).</p>
-    <p><strong>Робота:</strong> die Arbeit (робота), der Job (робота), der Beruf (професія), der Chef (шеф), das Büro (офіс), das Gehalt (зарплата), die Kollegen (колеги), arbeitslos (безробітний).</p>
-    <p><strong>Їжа:</strong> das Frühstück (сніданок), das Mittagessen (обід), das Abendessen (вечеря), das Brot (хліб), das Gemüse (овочі), das Obst (фрукти), vegetarisch (вегетаріанський), lecker (смачний).</p>
-    <p><strong>Подорожі:</strong> die Reise (подорож), der Urlaub (відпустка), das Flugzeug (літак), der Zug (поїзд), der Bahnhof (вокзал), die Fahrkarte (квиток), der Koffer (валіза), das Hotel (готель).</p>
-    <p><strong>Здоров'я:</strong> der Arzt (лікар), die Apotheke (аптека), das Krankenhaus (лікарня), krank (хворий), die Erkältung (нежить), das Fieber (гарячка), die Schmerzen (біль), der Termin (прийом).</p>
-    <p><strong>Покупки:</strong> der Supermarkt (супермаркет), einkaufen (робити покупки), der Preis (ціна), die Rechnung (рахунок), teuer (дорогий), billig (дешевий).</p>
-    <p><strong>Погода:</strong> das Wetter (погода), sonnig (сонячно), regnerisch (дощ), windig (вітряно), schneien (сніг), warm (тепло), kalt (холодно).</p>
-    <p><strong>Хобі:</strong> das Hobby (хобі), lesen (читати), schwimmen (плавати), wandern (ходити в походи), kochen (готувати), das Fahrrad (велосипед).</p>`
+    en: `<h3>📚 Vocabulary by Theme – Learn These for 60%+</h3>
+    <p><strong>Family (die Familie):</strong> die Mutter (mother), der Vater (father), die Eltern (parents), der Bruder (brother), die Schwester (sister), das Kind (child), die Kinder (children), der Sohn (son), die Tochter (daughter), die Großmutter (grandmother), der Großvater (grandfather), die Tante (aunt), der Onkel (uncle), verheiratet (married), geschieden (divorced), ledig (single), verlobt (engaged).</p>
+    <p><strong>Home (das Zuhause):</strong> die Wohnung (apartment), das Haus (house), das Zimmer (room), die Küche (kitchen), das Bad (bathroom), das Schlafzimmer (bedroom), das Wohnzimmer (living room), das Esszimmer (dining room), der Balkon (balcony), der Keller (basement), der Dachboden (attic), die Miete (rent), der Nachbar (neighbor), der Mieter (tenant), der Vermieter (landlord), umziehen (move), einziehen (move in).</p>
+    <p><strong>Work (die Arbeit):</strong> die Arbeit (work), der Job (job), der Beruf (profession), der Chef (boss), die Chefin (female boss), das Büro (office), das Gehalt (salary), die Kollegen (colleagues), der Kollege (male colleague), die Kollegin (female colleague), arbeitslos (unemployed), die Bewerbung (application), das Vorstellungsgespräch (interview), kündigen (quit), die Firma (company), die Abteilung (department).</p>
+    <p><strong>Food (das Essen):</strong> das Frühstück (breakfast), das Mittagessen (lunch), das Abendessen (dinner), das Brot (bread), das Brötchen (roll), der Käse (cheese), die Wurst (sausage), das Fleisch (meat), das Hähnchen (chicken), das Rindfleisch (beef), das Schweinefleisch (pork), das Gemüse (vegetables), das Obst (fruit), der Salat (salad), der Reis (rice), die Nudeln (pasta), vegetarisch (vegetarian), vegan (vegan), lecker (delicious), salzig (salty), süß (sweet), sauer (sour), bitter (bitter), das Getränk (drink), das Wasser (water), der Saft (juice), das Bier (beer), der Wein (wine).</p>
+    <p><strong>Travel (die Reise):</strong> die Reise (trip), der Urlaub (vacation), das Flugzeug (airplane), der Zug (train), der Bahnhof (train station), das Ticket (ticket), die Fahrkarte (ticket), der Koffer (suitcase), der Reisepass (passport), die Grenze (border), das Hotel (hotel), die Jugendherberge (youth hostel), die Pension (guesthouse), der Campingplatz (campsite), die Reservierung (reservation), buchen (book), abholen (pick up), abfahren (depart), ankommen (arrive), umsteigen (change).</p>
+    <p><strong>Health (die Gesundheit):</strong> der Arzt (doctor), die Ärztin (female doctor), die Apotheke (pharmacy), das Krankenhaus (hospital), krank (sick), die Erkältung (cold), das Fieber (fever), die Schmerzen (pain), der Kopfschmerz (headache), die Bauchschmerzen (stomachache), der Termin (appointment), die Versicherung (insurance), die Medizin (medicine), die Tablette (pill), verschreiben (prescribe), untersuchen (examine), sich erholen (recover).</p>
+    <p><strong>Shopping (das Einkaufen):</strong> der Supermarkt (supermarket), das Geschäft (shop), einkaufen (shop), der Preis (price), die Rechnung (bill), das Angebot (offer), die Quittung (receipt), teuer (expensive), billig (cheap), umsonst (free), reduziert (discounted), die Kasse (checkout), der Einkaufswagen (cart), die Tüte (bag), der Kunde (customer), bezahlen (pay), bar (cash), die Karte (card).</p>
+    <p><strong>Weather (das Wetter):</strong> sonnig (sunny), regnerisch (rainy), windig (windy), schneien (snow), es schneit (it's snowing), die Temperatur (temperature), warm (warm), kalt (cold), heiß (hot), der Schirm (umbrella), die Sonne (sun), der Regen (rain), der Schnee (snow), der Wind (wind), die Wolke (cloud), der Nebel (fog), das Gewitter (thunderstorm).</p>
+    <p><strong>Hobbies (die Hobbys):</strong> lesen (read), schwimmen (swim), wandern (hike), kochen (cook), tanzen (dance), singen (sing), malen (paint), das Fahrrad (bicycle), das Fitnessstudio (gym), der Sport (sport), Fußball spielen (play football), Musik hören (listen to music), Filme sehen (watch movies), Fotos machen (take photos), reisen (travel), Gartenarbeit (gardening).</p>
+    <p><strong>Body (der Körper):</strong> der Kopf (head), das Auge (eye), die Nase (nose), der Mund (mouth), das Ohr (ear), der Arm (arm), die Hand (hand), das Bein (leg), der Fuß (foot), der Rücken (back), der Bauch (stomach), das Herz (heart), die Haut (skin), das Haar (hair), der Zahn (tooth).</p>
+    <p><strong>City/Transport (die Stadt):</strong> die Straße (street), die Kreuzung (intersection), die Ampel (traffic light), der Bürgersteig (sidewalk), die U-Bahn (subway), die S-Bahn (city train), die Straßenbahn (tram), der Bus (bus), das Taxi (taxi), das Auto (car), das Fahrrad (bicycle), der Parkplatz (parking), die Tankstelle (gas station), die Autobahn (highway), die Baustelle (construction).</p>`,
+    tr: `<h3>📚 Konulara Göre Kelime Dağarcığı – %60+ İçin Öğrenin</h3>
+    <p><strong>Aile (die Familie):</strong> die Mutter (anne), der Vater (baba), die Eltern (ebeveynler), der Bruder (erkek kardeş), die Schwester (kız kardeş), das Kind (çocuk), die Kinder (çocuklar), der Sohn (oğul), die Tochter (kız), die Großmutter (büyükanne), der Großvater (büyükbaba), verheiratet (evli), geschieden (boşanmış), ledig (bekar).</p>
+    <p><strong>Ev (das Zuhause):</strong> die Wohnung (apartman), das Haus (ev), das Zimmer (oda), die Küche (mutfak), das Bad (banyo), das Schlafzimmer (yatak odası), das Wohnzimmer (oturma odası), der Balkon (balkon), der Keller (kiler), die Miete (kira), der Nachbar (komşu), umziehen (taşınmak).</p>
+    <p><strong>İş (die Arbeit):</strong> die Arbeit (iş), der Job (meslek), der Beruf (meslek), der Chef (patron), das Büro (ofis), das Gehalt (maaş), die Kollegen (iş arkadaşları), arbeitslos (işsiz), die Bewerbung (başvuru), das Vorstellungsgespräch (mülakat), die Firma (şirket).</p>
+    <p><strong>Yemek (das Essen):</strong> das Frühstück (kahvaltı), das Mittagessen (öğle yemeği), das Abendessen (akşam yemeği), das Brot (ekmek), das Brötchen (poğaça), der Käse (peynir), die Wurst (sucuk), das Fleisch (et), das Hähnchen (tavuk), das Gemüse (sebze), das Obst (meyve), vegetarisch (vejetaryen), vegan (vegan), lecker (lezzetli), teuer (pahalı), billig (ucuz).</p>
+    <p><strong>Seyahat (die Reise):</strong> die Reise (seyahat), der Urlaub (tatil), das Flugzeug (uçak), der Zug (tren), der Bahnhof (tren istasyonu), die Fahrkarte (bilet), der Koffer (bavul), der Reisepass (pasaport), das Hotel (otel), die Reservierung (rezervasyon), buchen (rezervasyon yapmak), abfahren (kalkmak), ankommen (varmak).</p>
+    <p><strong>Sağlık (die Gesundheit):</strong> der Arzt (doktor), die Apotheke (eczane), das Krankenhaus (hastane), krank (hasta), die Erkältung (soğuk algınlığı), das Fieber (ateş), die Schmerzen (ağrı), der Kopfschmerz (baş ağrısı), der Termin (randevu), die Versicherung (sigorta), die Medizin (ilaç).</p>
+    <p><strong>Alışveriş (das Einkaufen):</strong> der Supermarkt (süpermarket), einkaufen (alışveriş yapmak), der Preis (fiyat), die Rechnung (fatura), teuer (pahalı), billig (ucuz), die Kasse (kasa), bezahlen (ödemek).</p>
+    <p><strong>Hava (das Wetter):</strong> sonnig (güneşli), regnerisch (yağmurlu), windig (rüzgarlı), schneien (kar yağmak), warm (ılık), kalt (soğuk), heiß (sıcak), der Schirm (şemsiye).</p>
+    <p><strong>Hobiler (die Hobbys):</strong> lesen (okumak), schwimmen (yüzmek), wandern (doğa yürüyüşü), kochen (yemek yapmak), tanzen (dans etmek), das Fahrrad (bisiklet), das Fitnessstudio (spor salonu), der Sport (spor), Musik hören (müzik dinlemek), Filme sehen (film izlemek).</p>`,
+    ar: `<div dir="rtl" style="text-align:right"><h3>📚 المفردات حسب الموضوع – تعلمها للحصول على 60%+</h3>
+    <p><strong>العائلة (die Familie):</strong> die Mutter (الأم)، der Vater (الأب)، die Eltern (الوالدان)، der Bruder (الأخ)، die Schwester (الأخت)، das Kind (الطفل)، die Kinder (الأطفال)، der Sohn (الابن)، die Tochter (الابنة)، die Großmutter (الجدة)، der Großvater (الجد)، verheiratet (متزوج)، geschieden (مطلق)، ledig (أعزب).</p>
+    <p><strong>المنزل (das Zuhause):</strong> die Wohnung (شقة)، das Haus (منزل)، das Zimmer (غرفة)، die Küche (مطبخ)، das Bad (حمام)، das Schlafzimmer (غرفة نوم)، das Wohnzimmer (غرفة معيشة)، der Balkon (شرفة)، der Keller (قبو)، die Miete (إيجار)، der Nachbar (جار)، umziehen (انتقال).</p>
+    <p><strong>العمل (die Arbeit):</strong> die Arbeit (عمل)، der Job (وظيفة)، der Beruf (مهنة)، der Chef (مدير)، das Büro (مكتب)، das Gehalt (راتب)، die Kollegen (زملاء)، arbeitslos (عاطل)، die Bewerbung (طلب)، die Firma (شركة).</p>
+    <p><strong>الطعام (das Essen):</strong> das Frühstück (فطور)، das Mittagessen (غداء)، das Abendessen (عشاء)، das Brot (خبز)، der Käse (جبن)، die Wurst (سجق)، das Fleisch (لحم)، das Hähnchen (دجاج)، das Gemüse (خضار)، das Obst (فاكهة)، vegetarisch (نباتي)، vegan (نباتي صرف)، lecker (لذيذ)، teuer (غالي)، billig (رخيص).</p>
+    <p><strong>السفر (die Reise):</strong> die Reise (رحلة)، der Urlaub (إجازة)، das Flugzeug (طائرة)، der Zug (قطار)، der Bahnhof (محطة قطار)، die Fahrkarte (تذكرة)، der Koffer (حقيبة)، der Reisepass (جواز سفر)، das Hotel (فندق)، die Reservierung (حجز)، buchen (حجز)، abfahren (مغادرة)، ankommen (وصول).</p>
+    <p><strong>الصحة (die Gesundheit):</strong> der Arzt (طبيب)، die Apotheke (صيدلية)، das Krankenhaus (مستشفى)، krank (مريض)، die Erkältung (زكام)، das Fieber (حمى)، die Schmerzen (ألم)، der Kopfschmerz (صداع)، der Termin (موعد)، die Versicherung (تأمين)، die Medizin (دواء).</p>
+    <p><strong>التسوق (das Einkaufen):</strong> der Supermarkt (سوبرماركت)، einkaufen (تسوق)، der Preis (سعر)، die Rechnung (فاتورة)، teuer (غالي)، billig (رخيص)، die Kasse (محاسبة)، bezahlen (دفع).</p>
+    <p><strong>الطقس (das Wetter):</strong> sonnig (مشمس)، regnerisch (ممطر)، windig (عاصف)، schneien (ثلج)، warm (دافئ)، kalt (بارد)، heiß (حار)، der Schirm (مظلة).</p>
+    <p><strong>الهوايات (die Hobbys):</strong> lesen (قراءة)، schwimmen (سباحة)، wandern (تنزه)، kochen (طبخ)، tanzen (رقص)، das Fahrrad (دراجة)، das Fitnessstudio (نادي رياضي)، der Sport (رياضة)، Musik hören (استماع موسيقى)، Filme sehen (مشاهدة أفلام).</p></div>`,
+    uk: `<h3>📚 Словниковий запас за темами – Вивчіть для 60%+</h3>
+    <p><strong>Сім'я (die Familie):</strong> die Mutter (мати), der Vater (батько), die Eltern (батьки), der Bruder (брат), die Schwester (сестра), das Kind (дитина), die Kinder (діти), der Sohn (син), die Tochter (дочка), die Großmutter (бабуся), der Großvater (дідусь), verheiratet (одружений), geschieden (розлучений), ledig (неодружений).</p>
+    <p><strong>Дім (das Zuhause):</strong> die Wohnung (квартира), das Haus (будинок), das Zimmer (кімната), die Küche (кухня), das Bad (ванна), das Schlafzimmer (спальня), das Wohnzimmer (вітальня), der Balkon (балкон), der Keller (підвал), die Miete (оренда), der Nachbar (сусід), umziehen (переїжджати).</p>
+    <p><strong>Робота (die Arbeit):</strong> die Arbeit (робота), der Job (робота), der Beruf (професія), der Chef (шеф), das Büro (офіс), das Gehalt (зарплата), die Kollegen (колеги), arbeitslos (безробітний), die Bewerbung (заява), die Firma (компанія).</p>
+    <p><strong>Їжа (das Essen):</strong> das Frühstück (сніданок), das Mittagessen (обід), das Abendessen (вечеря), das Brot (хліб), der Käse (сир), die Wurst (ковбаса), das Fleisch (м'ясо), das Hähnchen (курка), das Gemüse (овочі), das Obst (фрукти), vegetarisch (вегетаріанський), vegan (веганський), lecker (смачний), teuer (дорогий), billig (дешевий).</p>
+    <p><strong>Подорожі (die Reise):</strong> die Reise (подорож), der Urlaub (відпустка), das Flugzeug (літак), der Zug (поїзд), der Bahnhof (вокзал), die Fahrkarte (квиток), der Koffer (валіза), der Reisepass (паспорт), das Hotel (готель), die Reservierung (бронювання), buchen (бронювати), abfahren (відправлятися), ankommen (прибувати).</p>
+    <p><strong>Здоров'я (die Gesundheit):</strong> der Arzt (лікар), die Apotheke (аптека), das Krankenhaus (лікарня), krank (хворий), die Erkältung (нежить), das Fieber (гарячка), die Schmerzen (біль), der Kopfschmerz (головний біль), der Termin (прийом), die Versicherung (страхування), die Medizin (ліки).</p>
+    <p><strong>Покупки (das Einkaufen):</strong> der Supermarkt (супермаркет), einkaufen (робити покупки), der Preis (ціна), die Rechnung (рахунок), teuer (дорогий), billig (дешевий), die Kasse (каса), bezahlen (платити).</p>
+    <p><strong>Погода (das Wetter):</strong> sonnig (сонячно), regnerisch (дощ), windig (вітряно), schneien (сніг), warm (тепло), kalt (холодно), heiß (спекотно), der Schirm (парасолька).</p>
+    <p><strong>Хобі (die Hobbys):</strong> lesen (читати), schwimmen (плавати), wandern (ходити в походи), kochen (готувати), tanzen (танцювати), das Fahrrad (велосипед), das Fitnessstudio (спортзал), der Sport (спорт), Musik hören (слухати музику), Filme sehen (дивитися фільми).</p>`
+  },
+  checklist: {
+    en: `<h3>✅ 60+ Point Guarantee Checklist</h3>
+    <p>Read and memorize this checklist before your exam. If you follow every point, you WILL pass with 60%+.</p>
+    <h4>Before the Exam:</h4>
+    <ul>
+      <li>✅ Learn all 24 verbs in the Verb Guide perfectly (Präsens + Perfekt)</li>
+      <li>✅ Memorize the 5 writing formulas (SMS + Email)</li>
+      <li>✅ Practice speaking with the example dialogues for 5 minutes daily</li>
+      <li>✅ Know all Akkusativ and Dativ prepositions by heart</li>
+      <li>✅ Learn the vocabulary lists above (Family, Home, Work, Food, Travel, Health)</li>
+    </ul>
+    <h4>During the Exam:</h4>
+    <ul>
+      <li>✅ Lesen: Read all questions before the text. Eliminate wrong answers first.</li>
+      <li>✅ Hören: Write numbers immediately. Listen for negatives (nicht, kein, nie).</li>
+      <li>✅ Schreiben: Count words. Answer all 3 bullet points. Use perfect formulas.</li>
+      <li>✅ Sprechen: Speak to all points. Use connectors. Smile and be confident!</li>
+    </ul>
+    <h4>Golden Emergency Phrases (if you forget everything):</h4>
+    <div class="example-box">
+      <strong>Writing:</strong> "Hallo [Name], ich schreibe, weil ich [reason]. Ich möchte [detail]. Könntest du mir helfen? Vielen Dank. Liebe Grüße, [Your Name]."<br><br>
+      <strong>Speaking Teil 1:</strong> "Wo wohnen Sie? Was sind Ihre Hobbys? Wann haben Sie Geburtstag? Was essen Sie gern?"<br><br>
+      <strong>Speaking Teil 2:</strong> "Zuerst... Dann... Danach... Außerdem... Aber manchmal..."<br><br>
+      <strong>Speaking Teil 3:</strong> "Hast du am [Tag] Zeit? Wie wäre es mit [Uhrzeit]? Das passt gut! Machen wir so!"
+    </div>
+    <p style="margin-top:16px; padding:12px; background:#e8f5e9; border-radius:8px; text-align:center; font-weight:600; color:var(--success);">🎯 If you study this guide for 2 hours and complete 3 practice exams, you are guaranteed to pass A2. Good luck!</p>`,
+    tr: `<h3>✅ %60+ Garanti Kontrol Listesi</h3>
+    <p>Sınavdan önce bu kontrol listesini okuyun ve ezberleyin. Her noktayı takip ederseniz, %60+ ile geçeceksiniz.</p>
+    <h4>Sınavdan Önce:</h4>
+    <ul>
+      <li>✅ Fiil Rehberindeki tüm 24 fiili mükemmel öğrenin (Präsens + Perfekt)</li>
+      <li>✅ 5 yazma kalıbını ezberleyin (SMS + E-posta)</li>
+      <li>✅ Günde 5 dakika örnek diyaloglarla konuşma pratiği yapın</li>
+      <li>✅ Tüm Akkusativ ve Dativ edatlarını ezbere bilin</li>
+      <li>✅ Yukarıdaki kelime listelerini öğrenin (Aile, Ev, İş, Yemek, Seyahat, Sağlık)</li>
+    </ul>
+    <h4>Sınav Sırasında:</h4>
+    <ul>
+      <li>✅ Lesen: Önce tüm soruları okuyun. Önce yanlış cevapları eleyin.</li>
+      <li>✅ Hören: Sayıları hemen yazın. Olumsuzları dinleyin (nicht, kein, nie).</li>
+      <li>✅ Schreiben: Kelime sayın. Tüm 3 maddeyi cevaplayın. Mükemmel kalıpları kullanın.</li>
+      <li>✅ Sprechen: Tüm maddelere değinin. Bağlaçlar kullanın. Gülümseyin ve kendinize güvenin!</li>
+    </ul>
+    <h4>Altın Acil Cümleler (her şeyi unutursanız):</h4>
+    <div class="example-box">
+      <strong>Yazma:</strong> "Hallo [İsim], ich schreibe, weil ich [sebep]. Ich möchte [detay]. Könntest du mir helfen? Vielen Dank. Liebe Grüße, [İsminiz]."<br><br>
+      <strong>Konuşma Bölüm 1:</strong> "Wo wohnen Sie? Was sind Ihre Hobbys? Wann haben Sie Geburtstag? Was essen Sie gern?"<br><br>
+      <strong>Konuşma Bölüm 2:</strong> "Zuerst... Dann... Danach... Außerdem... Aber manchmal..."<br><br>
+      <strong>Konuşma Bölüm 3:</strong> "Hast du am [Gün] Zeit? Wie wäre es mit [Saat]? Das passt gut! Machen wir so!"
+    </div>
+    <p style="margin-top:16px; padding:12px; background:#e8f5e9; border-radius:8px; text-align:center; font-weight:600; color:var(--success);">🎯 Bu rehberi 2 saat çalışır ve 3 pratik sınav tamamlarsanız, A2'yi geçmek garantidir. İyi şanslar!</p>`,
+    ar: `<div dir="rtl" style="text-align:right"><h3>✅ قائمة التحقق لضمان 60+</h3>
+    <p>اقرأ وحفظ قائمة التحقق هذه قبل الامتحان. إذا اتبعت كل نقطة، سوف تنجح بـ 60%+.</p>
+    <h4>قبل الامتحان:</h4>
+    <ul>
+      <li>✅ تعلم جميع الأفعال الـ 24 في دليل الأفعال بشكل مثالي (Präsens + Perfekt)</li>
+      <li>✅ احفظ صيغ الكتابة الخمس (SMS + بريد إلكتروني)</li>
+      <li>✅ تدرب على التحدث مع الحوارات النموذجية 5 دقائق يومياً</li>
+      <li>✅ احفظ جميع حروف جر Akkusativ و Dativ عن ظهر قلب</li>
+      <li>✅ تعلم قوائم المفردات أعلاه (العائلة، المنزل، العمل، الطعام، السفر، الصحة)</li>
+    </ul>
+    <h4>أثناء الامتحان:</h4>
+    <ul>
+      <li>✅ Lesen: اقرأ جميع الأسئلة قبل النص. استبعد الإجابات الخاطئة أولاً.</li>
+      <li>✅ Hören: اكتب الأرقام فوراً. استمع للنفي (nicht, kein, nie).</li>
+      <li>✅ Schreiben: عد الكلمات. أجب على النقاط الثلاث جميعها. استخدم الصيغ المثالية.</li>
+      <li>✅ Sprechen: تناول جميع النقاط. استخدم روابط. ابتسم وكن واثقاً!</li>
+    </ul>
+    <h4>عبارات الطوارئ الذهبية (إذا نسيت كل شيء):</h4>
+    <div class="example-box">
+      <strong>الكتابة:</strong> "Hallo [الاسم]، ich schreibe، weil ich [السبب]. Ich möchte [التفاصيل]. Könntest du mir helfen? Vielen Dank. Liebe Grüße، [اسمك]."<br><br>
+      <strong>التحدث الجزء 1:</strong> "Wo wohnen Sie? Was sind Ihre Hobbys? Wann haben Sie Geburtstag? Was essen Sie gern?"<br><br>
+      <strong>التحدث الجزء 2:</strong> "Zuerst... Dann... Danach... Außerdem... Aber manchmal..."<br><br>
+      <strong>التحدث الجزء 3:</strong> "Hast du am [اليوم] Zeit? Wie wäre es mit [الوقت]? Das passt gut! Machen wir so!"
+    </div>
+    <p style="margin-top:16px; padding:12px; background:#e8f5e9; border-radius:8px; text-align:center; font-weight:600; color:var(--success);">🎯 إذا درست هذا الدليل لمدة ساعتين وأكملت 3 امتحانات تدريبية، فإن النجاح في A2 مضمون. حظاً موفقاً!</p></div>`,
+    uk: `<h3>✅ Контрольний список гарантії 60+</h3>
+    <p>Прочитайте та запам'ятайте цей список перед іспитом. Якщо ви дотримуватиметеся кожного пункту, ВИ здасте з 60%+.</p>
+    <h4>Перед іспитом:</h4>
+    <ul>
+      <li>✅ Вивчіть усі 24 дієслова з Довідника дієслів досконало (Präsens + Perfekt)</li>
+      <li>✅ Запам'ятайте 5 письмових формул (SMS + Лист)</li>
+      <li>✅ Практикуйте говоріння з прикладовими діалогами по 5 хвилин щодня</li>
+      <li>✅ Знайте напам'ять усі прийменники Akkusativ та Dativ</li>
+      <li>✅ Вивчіть списки словника вище (Сім'я, Дім, Робота, Їжа, Подорожі, Здоров'я)</li>
+    </ul>
+    <h4>Під час іспиту:</h4>
+    <ul>
+      <li>✅ Lesen: Спочатку прочитайте всі питання. Спочатку виключайте неправильні відповіді.</li>
+      <li>✅ Hören: Одразу записуйте числа. Слухайте заперечення (nicht, kein, nie).</li>
+      <li>✅ Schreiben: Рахуйте слова. Відповідайте на всі 3 пункти. Використовуйте ідеальні формули.</li>
+      <li>✅ Sprechen: Торкніться всіх пунктів. Використовуйте сполучники. Посміхайтеся і будьте впевнені!</li>
+    </ul>
+    <h4>Золоті аварійні фрази (якщо забули все):</h4>
+    <div class="example-box">
+      <strong>Письмо:</strong> "Hallo [Ім'я], ich schreibe, weil ich [причина]. Ich möchte [деталь]. Könntest du mir helfen? Vielen Dank. Liebe Grüße, [Ваше ім'я]."<br><br>
+      <strong>Говоріння Частина 1:</strong> "Wo wohnen Sie? Was sind Ihre Hobbys? Wann haben Sie Geburtstag? Was essen Sie gern?"<br><br>
+      <strong>Говоріння Частина 2:</strong> "Zuerst... Dann... Danach... Außerdem... Aber manchmal..."<br><br>
+      <strong>Говоріння Частина 3:</strong> "Hast du am [День] Zeit? Wie wäre es mit [Час]? Das passt gut! Machen wir so!"
+    </div>
+    <p style="margin-top:16px; padding:12px; background:#e8f5e9; border-radius:8px; text-align:center; font-weight:600; color:var(--success);">🎯 Якщо ви вивчите цей довідник 2 години та виконаєте 3 практичні іспити, ви гарантовано здасте A2. Удачі!</p>`
   }
 };
+
+
+function checkAnswers(section, teil, questions, correctAnswers) {
+  let score = 0;
+  questions.forEach((q, i) => {
+    const userVal = answers[section] && answers[section][teil] ? answers[section][teil][i] : undefined;
+    const containerId = teil === 'teil1' ? (section==='reading'?'r1':'l1') : teil === 'teil2' ? 'r2' : teil === 'teil3' ? (section==='reading'?'r3':'l3') : (section==='reading'?'r4':'l4');
+    const container = document.getElementById(`${containerId}-q${i}`);
+    if (!container) return;
+
+    const labels = container.querySelectorAll('label');
+    labels.forEach(lbl => {
+      lbl.classList.remove('correct', 'wrong');
+      const input = lbl.querySelector('input');
+      if (!input) return;
+
+      let isCorrect;
+      if (section === 'reading' && teil === 'teil4') {
+        isCorrect = input.value === correctAnswers[i];
+      } else if (section === 'listening' && teil === 'teil4') {
+        isCorrect = input.value === String(correctAnswers[i]);
+      } else {
+        isCorrect = parseInt(input.value) === correctAnswers[i];
+      }
+
+      if (isCorrect) {
+        lbl.classList.add('correct');
+        if (input.checked) score++;
+      } else if (input.checked) {
+        lbl.classList.add('wrong');
+      }
+    });
+  });
+
+  // Show floating score
+  const existing = document.getElementById('live-score');
+  if (existing) existing.remove();
+  const div = document.createElement('div');
+  div.id = 'live-score';
+  div.style.cssText = 'position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--card); padding:12px 24px; border-radius:12px; box-shadow:var(--shadow); border:2px solid var(--primary); z-index:1000; font-weight:700; color:var(--primary);';
+  div.innerHTML = `✅ ${score}/${questions.length} richtig`;
+  document.body.appendChild(div);
+  setTimeout(() => div.remove(), 4000);
+}
+
+function checkL2Answers() {
+  const data = currentExam.listening.teil2;
+  const userAnswers = answers.listening && answers.listening.teil2 ? answers.listening.teil2 : {};
+  let score = 0;
+  data.days.forEach((day, i) => {
+    const correct = data.answers[i];
+    const user = userAnswers[i];
+    const row = document.getElementById(`l2-row-${i}`);
+    if (user === correct) {
+      score++;
+      if (row) {
+        row.style.background = '#e8f5e9';
+        row.style.borderColor = 'var(--success)';
+      }
+    } else {
+      if (row) {
+        row.style.background = '#fdecea';
+        row.style.borderColor = 'var(--danger)';
+      }
+    }
+  });
+  const existing = document.getElementById('live-score');
+  if (existing) existing.remove();
+  const div = document.createElement('div');
+  div.id = 'live-score';
+  div.style.cssText = 'position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--card); padding:12px 24px; border-radius:12px; box-shadow:var(--shadow); border:2px solid var(--primary); z-index:1000; font-weight:700; color:var(--primary);';
+  div.innerHTML = `✅ ${score}/${data.days.length} richtig`;
+  document.body.appendChild(div);
+  setTimeout(() => div.remove(), 4000);
+}
 
 // ===================== APP STATE =====================
 let currentExam = null;
@@ -2315,38 +2649,6 @@ function formatTime(seconds) {
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
   return `${m}:${s.toString().padStart(2, '0')}`;
-}
-
-// ===================== TTS =====================
-function speakGerman(text) {
-  if (!window.speechSynthesis) {
-    alert('Ihr Browser unterstützt keine Sprachausgabe. Bitte verwenden Sie Chrome, Edge oder Safari.');
-    return;
-  }
-  window.speechSynthesis.cancel();
-  
-  const voices = window.speechSynthesis.getVoices();
-  let deVoice = voices.find(v => v.name.includes('Google Deutsch')) 
-    || voices.find(v => v.name.includes('Hedda')) 
-    || voices.find(v => v.name.includes('Stefan')) 
-    || voices.find(v => v.name.includes('Katja')) 
-    || voices.find(v => v.lang && v.lang.startsWith('de'));
-  
-  const sentences = text.match(/[^\.!\?]+[\.!\?]+/g) || [text];
-  
-  sentences.forEach(sentence => {
-    const utter = new SpeechSynthesisUtterance(sentence.trim());
-    utter.lang = 'de-DE';
-    utter.rate = 0.85;
-    utter.pitch = 1.0;
-    if (deVoice) utter.voice = deVoice;
-    window.speechSynthesis.speak(utter);
-  });
-}
-
-function toggleTranscript(id) {
-  const el = document.getElementById(id);
-  if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
 }
 
 // ===================== RENDER =====================
@@ -2469,7 +2771,8 @@ function renderStudyGuide() {
     {id:'speaking', label:'🗣️ Speaking'},
     {id:'listening', label:'🎧 Listening'},
     {id:'reading', label:'📖 Reading'},
-    {id:'vocabulary', label:'📚 Vocabulary'}
+    {id:'vocabulary', label:'📚 Vocabulary'},
+    {id:'checklist', label:'✅ Checklist'}
   ];
   let html = `
     <div class="container">
@@ -2622,6 +2925,7 @@ function renderReadingTeil1() {
         `).join('')}
         <div class="nav-buttons">
           <button class="btn btn-outline" onclick="renderHome()">⬅ Home</button>
+          <button class="btn btn-accent" onclick="checkAnswers('reading', 'teil1', currentExam.reading.teil1.questions, currentExam.reading.teil1.questions.map(q => q.answer))">Antworten prüfen</button>
           <button class="btn btn-primary" onclick="renderReadingTeil2()">Weiter zu Teil 2 ➡</button>
         </div>
       </div>
@@ -2653,6 +2957,7 @@ function renderReadingTeil2() {
         `).join('')}
         <div class="nav-buttons">
           <button class="btn btn-outline" onclick="renderReadingTeil1()">⬅ Zurück</button>
+          <button class="btn btn-accent" onclick="checkAnswers('reading', 'teil2', currentExam.reading.teil2.questions, currentExam.reading.teil2.questions.map(q => q.answer))">Antworten prüfen</button>
           <button class="btn btn-primary" onclick="renderReadingTeil3()">Weiter zu Teil 3 ➡</button>
         </div>
       </div>
@@ -2686,6 +2991,7 @@ function renderReadingTeil3() {
         `).join('')}
         <div class="nav-buttons">
           <button class="btn btn-outline" onclick="renderReadingTeil2()">⬅ Zurück</button>
+          <button class="btn btn-accent" onclick="checkAnswers('reading', 'teil3', currentExam.reading.teil3.questions, currentExam.reading.teil3.questions.map(q => q.answer))">Antworten prüfen</button>
           <button class="btn btn-primary" onclick="renderReadingTeil4()">Weiter zu Teil 4 ➡</button>
         </div>
       </div>
@@ -2724,6 +3030,7 @@ function renderReadingTeil4() {
         `).join('')}
         <div class="nav-buttons">
           <button class="btn btn-outline" onclick="renderReadingTeil3()">⬅ Zurück</button>
+          <button class="btn btn-accent" onclick="checkAnswers('reading', 'teil4', currentExam.reading.teil4.people, currentExam.reading.teil4.people.map(p => p.match))">Antworten prüfen</button>
           <button class="btn btn-success" onclick="finishReading()">Lesen beenden ✓</button>
         </div>
       </div>
@@ -2757,9 +3064,9 @@ function renderListeningTeil1() {
         ${data.map((item, i) => `
           <div class="question-box">
             <div class="audio-box" id="box-l1-${i}">
-              <button class="btn btn-primary" id="btn-l1-${i}" onclick="playAudio(${i})">▶️ Audio ${i+1} abspielen</button>
-              <button class="btn btn-outline" style="margin-top:8px; font-size:0.8rem" onclick="toggleTranscript('audio-text-${i}')">📝 Transkript anzeigen/ausblenden</button>
-              <div class="audio-text" id="audio-text-${i}" style="display:block; font-size:0.9rem; color:var(--text-light); margin-top:8px; padding:8px; background:#f0f7fa; border-radius:6px;">
+              <button class="btn btn-primary" id="btn-l1-${i}" onclick="playListeningTeil1(${i})">🔊 Audio ${i+1} abspielen</button>
+              <button class="btn btn-outline" style="margin-top:8px; font-size:0.8rem" onclick="toggleTranscript('audio-text-${i}')">📝 Transkript anzeigen</button>
+              <div class="audio-text" id="audio-text-${i}" style="display:none; font-size:0.9rem; color:var(--text-light); margin-top:8px; padding:8px; background:#f0f7fa; border-radius:6px;">
                 <strong>Text:</strong> ${item.audio}
               </div>
             </div>
@@ -2773,6 +3080,7 @@ function renderListeningTeil1() {
         `).join('')}
         <div class="nav-buttons">
           <button class="btn btn-outline" onclick="renderHome()">⬅ Home</button>
+          <button class="btn btn-accent" onclick="checkAnswers('listening', 'teil1', currentExam.listening.teil1, currentExam.listening.teil1.map(q => q.answer))">Antworten prüfen</button>
           <button class="btn btn-primary" onclick="renderListeningTeil2()">Weiter zu Teil 2 ➡</button>
         </div>
       </div>
@@ -2781,12 +3089,6 @@ function renderListeningTeil1() {
   restoreAnswers('listening', 'teil1', 5);
 }
 
-function playAudio(index) {
-  const setId = currentExam.listening.id;
-  const data = currentExam.listening.teil1[index];
-  const src = `audio/set${setId}_teil1_q${index+1}.mp3`;
-  playNativeAudio(src, data.audio, `btn-l1-${index}`);
-}
 
 function renderListeningTeil2() {
   const set = currentExam.listening;
@@ -2800,9 +3102,9 @@ function renderListeningTeil2() {
         <p style="margin-bottom:16px; color:var(--text-light)">Hören Sie das Gespräch. Ordnen Sie die Aktivitäten den Wochentagen zu. Sie hören das Gespräch einmal.</p>
         <div class="hint-box">💡 Klicken Sie auf ▶️ Play, um das Gespräch zu hören. Klicken Sie dann auf einen Tag, um die gewählte Aktivität zuzuordnen.</div>
         <div class="audio-box" id="box-l2">
-          <button class="btn btn-primary" id="btn-l2" onclick="playAudioT2()">▶️ Gespräch abspielen</button>
-          <button class="btn btn-outline" style="margin-top:8px; font-size:0.8rem" onclick="toggleTranscript('audio-text-t2')">📝 Transkript anzeigen/ausblenden</button>
-          <div class="audio-text" id="audio-text-t2" style="display:block; font-size:0.9rem; color:var(--text-light); margin-top:8px; padding:8px; background:#f0f7fa; border-radius:6px;">
+          <button class="btn btn-primary" id="btn-l2" onclick="playListeningTeil2()">🔊 Gespräch abspielen</button>
+          <button class="btn btn-outline" style="margin-top:8px; font-size:0.8rem" onclick="toggleTranscript('audio-text-t2')">📝 Transkript anzeigen</button>
+          <div class="audio-text" id="audio-text-t2" style="display:none; font-size:0.9rem; color:var(--text-light); margin-top:8px; padding:8px; background:#f0f7fa; border-radius:6px;">
             <strong>Text:</strong> ${data.audio}
           </div>
         </div>
@@ -2831,6 +3133,7 @@ function renderListeningTeil2() {
         </div>
         <div class="nav-buttons">
           <button class="btn btn-outline" onclick="renderListeningTeil1()">⬅ Zurück</button>
+          <button class="btn btn-accent" onclick="checkL2Answers()">Antworten prüfen</button>
           <button class="btn btn-primary" onclick="renderListeningTeil3()">Weiter zu Teil 3 ➡</button>
         </div>
       </div>
@@ -2871,12 +3174,6 @@ function clearL2Day(dayIndex) {
   document.getElementById(`l2-row-${dayIndex}`).classList.remove('assigned');
 }
 
-function playAudioT2() {
-  const setId = currentExam.listening.id;
-  const data = currentExam.listening.teil2;
-  const src = `audio/set${setId}_teil2.mp3`;
-  playNativeAudio(src, data.audio, 'btn-l2');
-}
 
 function restoreL2Answers(data) {
   if (answers.listening && answers.listening.teil2) {
@@ -2904,9 +3201,9 @@ function renderListeningTeil3() {
         ${data.map((item, i) => `
           <div class="question-box">
             <div class="audio-box" id="box-l3-${i}">
-              <button class="btn btn-primary" id="btn-l3-${i}" onclick="playAudioL3(${i})">▶️ Gespräch ${i+1}</button>
-              <button class="btn btn-outline" style="margin-top:8px; font-size:0.8rem" onclick="toggleTranscript('audio-text-l3-${i}')">📝 Transkript anzeigen/ausblenden</button>
-              <div class="audio-text" id="audio-text-l3-${i}" style="display:block; font-size:0.9rem; color:var(--text-light); margin-top:8px; padding:8px; background:#f0f7fa; border-radius:6px;">
+              <button class="btn btn-primary" id="btn-l3-${i}" onclick="playListeningTeil3(${i})">🔊 Gespräch ${i+1}</button>
+              <button class="btn btn-outline" style="margin-top:8px; font-size:0.8rem" onclick="toggleTranscript('audio-text-l3-${i}')">📝 Transkript anzeigen</button>
+              <div class="audio-text" id="audio-text-l3-${i}" style="display:none; font-size:0.9rem; color:var(--text-light); margin-top:8px; padding:8px; background:#f0f7fa; border-radius:6px;">
                 <strong>Text:</strong> ${item.audio}
               </div>
             </div>
@@ -2920,6 +3217,7 @@ function renderListeningTeil3() {
         `).join('')}
         <div class="nav-buttons">
           <button class="btn btn-outline" onclick="renderListeningTeil2()">⬅ Zurück</button>
+          <button class="btn btn-accent" onclick="checkAnswers('listening', 'teil3', currentExam.listening.teil3, currentExam.listening.teil3.map(q => q.answer))">Antworten prüfen</button>
           <button class="btn btn-primary" onclick="renderListeningTeil4()">Weiter zu Teil 4 ➡</button>
         </div>
       </div>
@@ -2928,12 +3226,6 @@ function renderListeningTeil3() {
   restoreAnswers('listening', 'teil3', 5);
 }
 
-function playAudioL3(index) {
-  const setId = currentExam.listening.id;
-  const data = currentExam.listening.teil3[index];
-  const src = `audio/set${setId}_teil3_q${index+1}.mp3`;
-  playNativeAudio(src, data.audio, `btn-l3-${index}`);
-}
 
 function renderListeningTeil4() {
   const set = currentExam.listening;
@@ -2946,9 +3238,9 @@ function renderListeningTeil4() {
         <div class="progress-bar"><div class="progress-fill" style="width:87.5%"></div></div>
         <p style="margin-bottom:16px; color:var(--text-light)">Hören Sie das Interview. Markieren Sie Richtig (Ja) oder Falsch (Nein). Sie hören das Interview zweimal.</p>
         <div class="audio-box" id="box-l4">
-          <button class="btn btn-primary" id="btn-l4" onclick="playAudioL4()">▶️ Interview abspielen</button>
-          <button class="btn btn-outline" style="margin-top:8px; font-size:0.8rem" onclick="toggleTranscript('audio-text-l4')">📝 Transkript anzeigen/ausblenden</button>
-          <div class="audio-text" id="audio-text-l4" style="display:block; font-size:0.9rem; color:var(--text-light); margin-top:8px; padding:8px; background:#f0f7fa; border-radius:6px;">
+          <button class="btn btn-primary" id="btn-l4" onclick="playListeningTeil4()">🔊 Interview abspielen</button>
+          <button class="btn btn-outline" style="margin-top:8px; font-size:0.8rem" onclick="toggleTranscript('audio-text-l4')">📝 Transkript anzeigen</button>
+          <div class="audio-text" id="audio-text-l4" style="display:none; font-size:0.9rem; color:var(--text-light); margin-top:8px; padding:8px; background:#f0f7fa; border-radius:6px;">
             <strong>Text:</strong> ${data.audio}
           </div>
         </div>
@@ -2963,6 +3255,7 @@ function renderListeningTeil4() {
         `).join('')}
         <div class="nav-buttons">
           <button class="btn btn-outline" onclick="renderListeningTeil3()">⬅ Zurück</button>
+          <button class="btn btn-accent" onclick="checkAnswers('listening', 'teil4', currentExam.listening.teil4.statements, currentExam.listening.teil4.statements.map(s => s.answer))">Antworten prüfen</button>
           <button class="btn btn-success" onclick="finishListening()">Hören beenden ✓</button>
         </div>
       </div>
@@ -2971,12 +3264,6 @@ function renderListeningTeil4() {
   restoreAnswers('listening', 'teil4', 5);
 }
 
-function playAudioL4() {
-  const setId = currentExam.listening.id;
-  const data = currentExam.listening.teil4;
-  const src = `audio/set${setId}_teil4.mp3`;
-  playNativeAudio(src, data.audio, 'btn-l4');
-}
 
 function finishListening() {
   stopTimer();
@@ -3542,8 +3829,11 @@ window.addEventListener('beforeunload', stopAllAudio);
 renderHome();
 </script>
 <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js');
+  // Service Workers only work on http/https/localhost (not file://)
+  if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+    navigator.serviceWorker.register('sw.js').catch(function(err) {
+      console.log('SW registration skipped:', err.message);
+    });
   }
 </script>
 </body>
